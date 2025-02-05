@@ -6,6 +6,7 @@ import { LoginUserDto } from './dtos/login.dto';
 import { RegisterUserDto } from './dtos/register.dto';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { ValidateOtp } from './dtos/validateOtp.dto';
 
 
 @Injectable()
@@ -14,12 +15,17 @@ export class AuthService {
     constructor(@InjectModel(User.name) private readonly userModel: Model<User>) { }
 
     async login(loginUserDto: LoginUserDto): Promise<string> {
-        const { userId, password } = loginUserDto
+        const { email, password } = loginUserDto
 
-        const user = await this.userModel.findOne({ userId }, { userId: 1, role: 1, password: 1 });
+        if (!email || !password) {
+            throw new HttpException("Email Or Password Not Sent!", HttpStatus.NOT_FOUND)
+        }
+
+        const user = await this.userModel.findOne({ email }, { email: 1, role: 1, password: 1 });
+
 
         if (!user) {
-            throw new HttpException("User Not Found With This UserID", HttpStatus.NOT_FOUND)
+            throw new HttpException("User Not Found With This Email", HttpStatus.NOT_FOUND)
         }
 
         const check: boolean = await bcrypt.compare(password, user.password);
@@ -36,17 +42,21 @@ export class AuthService {
 
     async register(registerUserDto: RegisterUserDto): Promise<User> {
 
-        const { userId, password } = registerUserDto
+        const { password, email, phone, name } = registerUserDto
 
-        const checkUser = await this.userModel.findOne({ userId }).exec()
+        if (!email || !password || !phone || !name) {
+            throw new HttpException("Email Or Password Or Phone Or Name Not Sent!", HttpStatus.NOT_FOUND)
+        }
+
+        const checkUser = await this.userModel.findOne({ email }).exec()
         if (checkUser) {
-            throw new HttpException("UserId Already In Use", HttpStatus.ALREADY_REPORTED)
+            throw new HttpException("Email Already In Use", HttpStatus.ALREADY_REPORTED)
         }
 
         const saltOrRounds = 10;
         const hash = await bcrypt.hash(password, saltOrRounds);
 
-        const user = await this.userModel.create({ userId: userId, password: hash, role: "user" })
+        const user = await this.userModel.create({ password: hash, role: "user", email, phone, name })
 
         if (!user) {
             throw new HttpException("Couldn't Make The User", HttpStatus.NOT_IMPLEMENTED)
@@ -54,4 +64,82 @@ export class AuthService {
 
         return user
     }
+
+
+    async otpGenrator(email: string): Promise<number> {
+        const user = await this.userModel.findOne({ email }).exec();
+
+        if (!user) {
+            throw new HttpException("User Not Found With This Email", HttpStatus.NOT_FOUND);
+        }
+
+        const now = new Date();
+        const otpExpiryTime = 2 * 60 * 1000; // 2 minutes in milliseconds
+        const newOtp = Math.floor(100000 + Math.random() * 900000); // Random 6-digit OTP
+
+        if (user.otp) {
+            const { updatedAt, createdAt } = user.otp;
+
+            // Check if OTP has expired
+            if (
+                (updatedAt && new Date(updatedAt.getTime() + otpExpiryTime) < now) ||
+                (createdAt && new Date(createdAt.getTime() + otpExpiryTime) < now)
+            ) {
+                // Regenerate OTP
+                user.otp = {
+                    ...user.otp,
+                    otp: newOtp,
+                    updatedAt: now,
+                    expire: new Date(now.getTime() + otpExpiryTime),
+                    verified: false
+                };
+                await user.save();
+                return newOtp;
+            }
+
+            return user.otp.otp;
+        }
+
+        user.otp = {
+            otp: newOtp,
+            createdAt: now,
+            expire: new Date(now.getTime() + otpExpiryTime),
+            verified: false
+        };
+        await user.save();
+
+        return newOtp;
+    }
+
+    async validateOtp(email: string, validateOtp: ValidateOtp): Promise<boolean> {
+        const user = await this.userModel.findOne({ email }).exec();
+
+        if (!user) {
+            throw new HttpException("User Not Found With This Email", HttpStatus.NOT_FOUND);
+        }
+
+        if (!user.otp) {
+            throw new HttpException("No OTP found, please request a new one.", HttpStatus.BAD_REQUEST);
+        }
+
+        const { otp, expire } = user.otp;
+        const now = new Date();
+
+        // Check if OTP has expired
+        if (expire && expire < now) {
+            throw new HttpException("OTP has expired", HttpStatus.UNAUTHORIZED);
+        }
+
+        if (otp !== validateOtp.otp) {
+            throw new HttpException("OTP Entered Is Wrong!", HttpStatus.UNAUTHORIZED);
+        }
+
+        // Mark OTP as verified
+        user.otp.verified = true;
+        await user.save();
+
+        return true;
+    }
+
+
 }

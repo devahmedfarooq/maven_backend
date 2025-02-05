@@ -27,15 +27,15 @@ export class RateLimitMiddleware implements NestMiddleware {
 
       // Extract user ID from JWT (if available)
       const authHeader = req.headers.authorization;
-      let userId: string | null = null;
+      let email: string | null = null;
 
       if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.split(' ')[1];
 
         if (token) {
           try {
-            const decoded = jwt.verify(token, process.env.JWTSECRET ?? 'REV9TASKAHMED') as { userId: string };
-            userId = decoded.userId;
+            const decoded = jwt.verify(token, process.env.JWTSECRET ?? 'REV9TASKAHMED') as { email: string };
+            email = decoded.email;
           } catch (error) {
             throw new UnauthorizedException('Invalid token');
           }
@@ -44,7 +44,7 @@ export class RateLimitMiddleware implements NestMiddleware {
 
       let routeConfig: Record<string, string> = {};
       try {
-        if (userId) {
+        if (email) {
           routeConfig = await this.redisClient.hgetall(`rate-limit-config:${route}-auth`);
         } else {
           routeConfig = await this.redisClient.hgetall(`rate-limit-config:${route}`);
@@ -61,8 +61,8 @@ export class RateLimitMiddleware implements NestMiddleware {
 
 
         if (PUBLIC_ROUTES.includes(route)) {
-          if (userId) {
-            key = `rate-limit:user:${userId}:${route}`;
+          if (email) {
+            key = `rate-limit:user:${email}:${route}`;
             limit = DEFAULT_LIMITS.private.limit;
             window = DEFAULT_LIMITS.private.window;
           } else {
@@ -71,8 +71,8 @@ export class RateLimitMiddleware implements NestMiddleware {
             window = DEFAULT_LIMITS.public.window;
           }
         } else {
-          if (userId) {
-            key = `rate-limit:user:${userId}:${route}`;
+          if (email) {
+            key = `rate-limit:user:${email}:${route}`;
             limit = DEFAULT_LIMITS.private.limit;
             window = DEFAULT_LIMITS.private.window;
           } else {

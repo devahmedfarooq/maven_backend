@@ -10,6 +10,9 @@ import { RateLimitMiddleware } from './rate-limiter/rate-limiter.middleware';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
+import { UsersModule } from './users/users.module';
+import { BookingModule } from './booking/booking.module';
+import { ItemsModule } from './items/items.module';
 
 
 @Module({
@@ -31,7 +34,7 @@ import { AdminModule } from './admin/admin.module';
         uri: "mongodb://localhost:27017/rev9mongo"
       }
     }
-  }), AuthModule, AdminModule],
+  }), AuthModule, AdminModule, UsersModule, BookingModule, ItemsModule],
   controllers: [AppController],
   providers: [AppService, RedisService],
 })
