@@ -1,8 +1,8 @@
-# TASK FROM REV9 FOR AHMED FAROOQ
+# BACKEND: MAVEN
 
 Build a custom API Rate Limiter in NestJS to limit the number of requests a user can make to specific API endpoints. Use Redis for managing rate-limiting counters to ensure scalability in a distributed environment.
 
-## Task Description 
+##  Description 
 
 ### Rate-Limiting Rules
 - Users are allowed:
