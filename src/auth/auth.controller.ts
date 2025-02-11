@@ -25,14 +25,12 @@ export class AuthController {
 
 
     @Get('/otp')
-    @UseGuards(AuthGuard)
     async genrateOtp(@Req() req: Request) {
         const { email } = req['user']
         return await this.authService.otpGenrator(email)
     }
 
     @Post('/otp')
-    @UseGuards(AuthGuard)
     async validateOtp(@Req() req: Request, @Body() validateOtp: ValidateOtp) {
         const { email } = req['user']
         return await this.authService.validateOtp(email, validateOtp)

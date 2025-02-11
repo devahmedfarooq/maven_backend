@@ -34,7 +34,7 @@ export class AuthService {
             throw new HttpException("Password Don't Match", HttpStatus.UNAUTHORIZED)
         }
 
-        const token: string = jwt.sign({ ...loginUserDto, role: user.role }, this.jwtSecret, { expiresIn: '7d' });
+        const token: string = jwt.sign({ ...loginUserDto, role: user.role, validated: user.otp.verified }, this.jwtSecret, { expiresIn: '7d' });
 
         return token
     }

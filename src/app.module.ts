@@ -14,6 +14,7 @@ import { UsersModule } from './users/users.module';
 import { BookingModule } from './booking/booking.module';
 import { ItemsModule } from './items/items.module';
 import { EcommerceModule } from './ecommerce/ecommerce.module';
+import { UtilsModule } from './utils/utils.module';
 
 
 @Module({
@@ -35,7 +36,7 @@ import { EcommerceModule } from './ecommerce/ecommerce.module';
         uri: "mongodb://localhost:27017/rev9mongo"
       }
     }
-  }), AuthModule, AdminModule, UsersModule, BookingModule, ItemsModule, EcommerceModule],
+  }), AuthModule, AdminModule, UsersModule, BookingModule, ItemsModule, EcommerceModule, UtilsModule],
   controllers: [AppController],
   providers: [AppService, RedisService],
 })
