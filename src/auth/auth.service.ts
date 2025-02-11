@@ -21,7 +21,7 @@ export class AuthService {
             throw new HttpException("Email Or Password Not Sent!", HttpStatus.NOT_FOUND)
         }
 
-        const user = await this.userModel.findOne({ email }, { email: 1, role: 1, password: 1 });
+        const user = await this.userModel.findOne({ email }, { email: 1, role: 1, password: 1, otp: 1 });
 
 
         if (!user) {
@@ -56,7 +56,11 @@ export class AuthService {
         const saltOrRounds = 10;
         const hash = await bcrypt.hash(password, saltOrRounds);
 
-        const user = await this.userModel.create({ password: hash, role: "user", email, phone, name })
+        const user = await this.userModel.create({
+            password: hash, role: "user", email, phone, name, otp: {
+                verified: false
+            }
+        })
 
         if (!user) {
             throw new HttpException("Couldn't Make The User", HttpStatus.NOT_IMPLEMENTED)
