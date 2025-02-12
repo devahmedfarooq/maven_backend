@@ -18,7 +18,7 @@ import { UtilsModule } from './utils/utils.module';
 
 
 @Module({
-  imports: [CacheModule.registerAsync({
+  imports: [/* CacheModule.registerAsync({
     useFactory: async () => {
       return {
         stores: [
@@ -30,7 +30,7 @@ import { UtilsModule } from './utils/utils.module';
       };
     },
     isGlobal: true,
-  }), MongooseModule.forRootAsync({
+  }),  */MongooseModule.forRootAsync({
     useFactory: async () => {
       return {
         uri: "mongodb://localhost:27017/rev9mongo"
@@ -38,10 +38,10 @@ import { UtilsModule } from './utils/utils.module';
     }
   }), AuthModule, AdminModule, UsersModule, BookingModule, ItemsModule, EcommerceModule, UtilsModule],
   controllers: [AppController],
-  providers: [AppService, RedisService],
+  providers: [AppService/* , RedisService */],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RateLimitMiddleware).forRoutes('*'); // Apply to all routes
+    /* consumer.apply(RateLimitMiddleware).forRoutes('*'); */ // Apply to all routes
   }
 }

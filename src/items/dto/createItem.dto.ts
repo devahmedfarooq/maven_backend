@@ -36,4 +36,8 @@ export class CreateItemDto {
     @IsString()
     @IsNotEmpty()
     type: string;
+
+    @IsString()
+    @IsNotEmpty()
+    location: string
 }

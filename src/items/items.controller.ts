@@ -1,5 +1,7 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ItemsService } from './items.service';
+import { UpdateItemDto } from './dto/updateItem.dto';
+import { CreateItemDto } from './dto/createItem.dto';
 
 @Controller('items')
 export class ItemsController {
@@ -11,16 +13,33 @@ export class ItemsController {
     return await this.itemsService.getItems(page, limit, type)
   }
 
-  @Get('/:id')
-  async getItem(@Param('id') id: string) {
-    return await this.itemsService.getItem(id)
-  }
-  
   @Get('/feed')
   async getFeed() {
     return await this.itemsService.getTopItems()
   }
 
+  @Get('/:id')
+  async getItem(@Param('id') id: string) {
+    return await this.itemsService.getItem(id)
+  }
+
+
+
+
+  @Patch('/:id')
+  async update(id: string, updateItemDto: UpdateItemDto) {
+    return this.itemsService.updateItem(id, updateItemDto)
+  }
+
+  @Post('/')
+  async create(createItemDto: CreateItemDto) {
+    return await this.itemsService.createItem(createItemDto)
+  }
+
+  @Delete('/:id')
+  async delItem(@Param('id') id: string) {
+    return await this.itemsService.deleteItem(id)
+  }
 
 
 

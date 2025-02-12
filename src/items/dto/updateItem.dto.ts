@@ -43,4 +43,10 @@ export class UpdateItemDto {
     @IsString()
     @IsNotEmpty()
     type?: string;
+
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    location?: string
+
 }

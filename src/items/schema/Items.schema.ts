@@ -57,6 +57,9 @@ export class Item {
 
     @Prop({ type: String, required: true, enum: ["hotel", "cars", "service"] })
     type: string
+
+    @Prop({ type: String })
+    location: string
 }
 
 // Generate Mongoose Schemas
