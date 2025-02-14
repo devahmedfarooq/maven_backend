@@ -15,6 +15,7 @@ import { BookingModule } from './booking/booking.module';
 import { ItemsModule } from './items/items.module';
 import { EcommerceModule } from './ecommerce/ecommerce.module';
 import { UtilsModule } from './utils/utils.module';
+import { BlogsModule } from './blogs/blogs.module';
 
 
 @Module({
@@ -36,7 +37,7 @@ import { UtilsModule } from './utils/utils.module';
         uri: "mongodb://localhost:27017/maven"
       }
     }
-  }), AuthModule, AdminModule, UsersModule, BookingModule, ItemsModule, EcommerceModule, UtilsModule],
+  }), AuthModule, AdminModule, UsersModule, BookingModule, ItemsModule, EcommerceModule, UtilsModule, BlogsModule],
   controllers: [AppController],
   providers: [AppService/* , RedisService */],
 })
