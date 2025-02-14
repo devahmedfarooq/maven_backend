@@ -33,7 +33,7 @@ import { UtilsModule } from './utils/utils.module';
   }),  */MongooseModule.forRootAsync({
     useFactory: async () => {
       return {
-        uri: "mongodb://localhost:27017/rev9mongo"
+        uri: "mongodb://localhost:27017/maven"
       }
     }
   }), AuthModule, AdminModule, UsersModule, BookingModule, ItemsModule, EcommerceModule, UtilsModule],

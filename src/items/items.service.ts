@@ -114,7 +114,8 @@ export class ItemsService {
                                 _id: "$_id",
                                 totalReviews: "$totalReviews",
                                 img: { $arrayElemAt: ["$imgs", 0] },
-                                title: "$title"
+                                title: "$title",
+                                type: "$type"
                             }
                         }
                     }
