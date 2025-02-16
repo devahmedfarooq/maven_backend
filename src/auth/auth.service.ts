@@ -146,4 +146,32 @@ export class AuthService {
     }
 
 
+    async forgetPassword(email: string): Promise<{ message: string; token: string }> {
+        const user = await this.userModel.findOne({ email }).exec();
+        if (!user) {
+            throw new HttpException("User Not Found With This Email", HttpStatus.NOT_FOUND);
+        }
+
+        const token = jwt.sign({ email }, this.jwtSecret, { expiresIn: '15m' });
+        return { message: 'Password reset token sent to email', token };
+    }
+
+    async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+        try {
+            const decoded = jwt.verify(token, this.jwtSecret) as { email: string };
+            const user = await this.userModel.findOne({ email: decoded.email }).exec();
+            if (!user) {
+                throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
+            }
+
+            const saltOrRounds = 10;
+            user.password = await bcrypt.hash(newPassword, saltOrRounds);
+            await user.save();
+
+            return { message: 'Password successfully reset' };
+        } catch (error) {
+            throw new HttpException("Invalid or expired token", HttpStatus.UNAUTHORIZED);
+        }
+    }
+
 }

@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dtos/register.dto';
 import { AuthGuard } from './auth.guard';
 import { ValidateOtp } from './dtos/validateOtp.dto';
+import { ForgetPasswordDto } from './dtos/forgot.dto';
+import { ResetPasswordDto } from './dtos/resetPassword.dto';
 
 
 @Controller('auth')
@@ -34,6 +36,18 @@ export class AuthController {
     async validateOtp(@Req() req: Request, @Body() validateOtp: ValidateOtp) {
         const { email } = req['user']
         return await this.authService.validateOtp(email, validateOtp)
+    }
+
+
+    @Post('/forget-password')
+    async forgetPassword(@Body() forgetpasswordDto: ForgetPasswordDto) {
+        return this.authService.forgetPassword(forgetpasswordDto.email)
+    }
+
+
+    @Post('/reset-password')
+    async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+        return this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.newPassword)
     }
 
 }

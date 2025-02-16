@@ -26,6 +26,9 @@ export class Article {
 
     @Prop({ type: Number, required: true, default: 1 }) // Ensure quantity is a number
     quantity: number;
+
+    @Prop({ type: String })
+    category: string
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
