@@ -13,7 +13,7 @@ export class AuthService {
   private readonly jwtSecret = process.env.JWTSECERT ?? 'REV9TASKAHMED';
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
-  ) {}
+  ) { }
 
   async login(loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
@@ -167,7 +167,7 @@ export class AuthService {
       throw new HttpException('OTP has expired', HttpStatus.UNAUTHORIZED);
     }
 
-    if (otp !== validateOtp.otp) {
+    if (String(otp) !== String(validateOtp.otp)) {
       throw new HttpException('OTP Entered Is Wrong!', HttpStatus.UNAUTHORIZED);
     }
 
