@@ -26,12 +26,27 @@ export class ItemsService {
 
     }
 
-    async getItems(page: number = 1, limit: number = 10, type?: string, search?: string) {
-        let filter = type ? { type } : {}; // If type is provided, filter by it; otherwise, get all items
+    async getItems(page: number = 1, limit: number = 10, type?: string, search?: string, rating?: number, price?: number) {
+        let filter: any = type ? { type } : {}; // If type is provided, filter by it; otherwise, get all items
 
+        // Add text search if search query is provided
+        if (search) {
+            filter.$text = { $search: search };
+        }
 
+        // Add rating filter (exact match) if provided
+        if (rating !== undefined) {
+            filter.rating = rating;
+        }
+
+        // Add price range filter if price is provided
+        if (price !== undefined) {
+            filter.price = { $gte: price - 10, $lte: price + 10 }; // Adjust range as needed
+        }
+
+        // Fetch items from database
         const items = await this.itemModel
-            .find(search ? { ...filter, $text: { $search: search } } : filter, { _id: 0, __v: 0 })
+            .find(filter, { _id: 0, __v: 0 }) // Exclude _id and __v fields
             .sort({ score: { $meta: 'textScore' } }).skip((page - 1) * limit) // Skip items for pagination
             .limit(limit) // Limit the number of results
             .exec();
