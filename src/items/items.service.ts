@@ -30,8 +30,10 @@ export class ItemsService {
         let filter: any = type ? { type } : {}; // If type is provided, filter by it; otherwise, get all items
 
         // Add text search if search query is provided
+        const sort: any = {};
         if (search) {
             filter.$text = { $search: search };
+            sort.score = { $meta: 'textScore' }; // Only apply sorting if text search is used
         }
 
         // Add rating filter (exact match) if provided
@@ -41,13 +43,13 @@ export class ItemsService {
 
         // Add price range filter if price is provided
         if (price !== undefined) {
-            filter.price = { $lte: price }; // Adjust range as needed
+            filter.price = { $gte: price - 10, $lte: price + 10 }; // Adjust range as needed
         }
 
         // Fetch items from database
         const items = await this.itemModel
             .find(filter, { _id: 0, __v: 0 }) // Exclude _id and __v fields
-            .sort({ score: { $meta: 'textScore' } }).skip((page - 1) * limit) // Skip items for pagination
+            .sort(sort).skip((page - 1) * limit) // Skip items for pagination
             .limit(limit) // Limit the number of results
             .exec();
 
