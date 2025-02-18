@@ -9,7 +9,7 @@ export class ItemsController {
 
 
   @Get('/')
-  async getItems(@Query('page') page: number, @Query('limit') limit: number, @Query('type') type?: string) {
+  async getItems(@Query('page') page: number, @Query('limit') limit: number, @Query('type') type?: string, @Query('text') search?: string) {
     return await this.itemsService.getItems(page, limit, type)
   }
 

@@ -65,4 +65,8 @@ export class Item {
 // Generate Mongoose Schemas
 export const ReviewSchema = SchemaFactory.createForClass(Review);
 export const PriceSchema = SchemaFactory.createForClass(Price);
-export const ItemSchema = SchemaFactory.createForClass(Item);
+const ItemSchema = SchemaFactory.createForClass(Item);
+ItemSchema.index({ title: 'text', subtitle: 'text' })
+export {
+    ItemSchema
+}

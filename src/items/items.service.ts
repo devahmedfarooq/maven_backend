@@ -26,12 +26,13 @@ export class ItemsService {
 
     }
 
-    async getItems(page: number = 1, limit: number = 10, type?: string) {
-        const filter = type ? { type } : {}; // If type is provided, filter by it; otherwise, get all items
+    async getItems(page: number = 1, limit: number = 10, type?: string, search?: string) {
+        let filter = type ? { type } : {}; // If type is provided, filter by it; otherwise, get all items
+
 
         const items = await this.itemModel
-            .find(filter, { _id: 0, __v: 0 })
-            .skip((page - 1) * limit) // Skip items for pagination
+            .find(search ? { ...filter, $text: { $search: search } } : filter, { _id: 0, __v: 0 })
+            .sort({ score: { $meta: 'textScore' } }).skip((page - 1) * limit) // Skip items for pagination
             .limit(limit) // Limit the number of results
             .exec();
 
@@ -99,7 +100,7 @@ export class ItemsService {
 
     async getTopItems() {
         try {
-            
+
             const result = await this.itemModel.aggregate([
                 {
                     $addFields: {
@@ -116,8 +117,8 @@ export class ItemsService {
                                 img: { $arrayElemAt: ["$imgs", 0] },
                                 title: "$title",
                                 type: "$type",
-                                price : "$price",
-                                location : "$location"
+                                price: "$price",
+                                location: "$location"
                             }
                         }
                     }
