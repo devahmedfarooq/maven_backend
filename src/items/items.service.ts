@@ -38,12 +38,16 @@ export class ItemsService {
 
         // Add rating filter (exact match) if provided
         if (rating !== undefined) {
-            filter.rating = rating;
+            filter.reviews = {
+                $elemMatch: { rating: rating } // ✅ At least one review must have the exact rating
+            };
         }
 
         // Add price range filter if price is provided
         if (price !== undefined) {
-            filter.price = { $gte: price - 10, $lte: price + 10 }; // Adjust range as needed
+            filter.price = { 
+                $elemMatch: { cost: { $lte: price } } // ✅ Checks if at least one cost is <= given price
+            };
         }
 
         // Fetch items from database
