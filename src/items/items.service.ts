@@ -41,7 +41,7 @@ export class ItemsService {
 
         // Add price range filter if price is provided
         if (price !== undefined) {
-            filter.price = { $gte: price - 10, $lte: price + 10 }; // Adjust range as needed
+            filter.price = { $lte: price }; // Adjust range as needed
         }
 
         // Fetch items from database
