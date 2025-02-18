@@ -26,7 +26,7 @@ export class ItemsService {
 
     }
 
-    async getItems(page: number = 1, limit: number = 10, type?: string, search?: string, rating?: number, price?: number) {
+    async getItems(page: number = 1, limit: number = 10, type?: string, search?: string, rating?: string, price?: string) {
         let filter: any = type ? { type } : {}; // If type is provided, filter by it; otherwise, get all items
 
         // Add text search if search query is provided
