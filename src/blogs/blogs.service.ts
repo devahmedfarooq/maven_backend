@@ -5,15 +5,15 @@ import { Blog, BlogDocument } from './schema/blog.schema';
 
 @Injectable()
 export class BlogsService {
-  constructor(@InjectModel(Blog.name) private blogModel: Model<BlogDocument>) {}
+  constructor(@InjectModel(Blog.name) private blogModel: Model<BlogDocument>) { }
 
   async create(blogData: Blog): Promise<Blog> {
     const newBlog = new this.blogModel(blogData);
     return newBlog.save();
   }
 
-  async findAll(): Promise<Blog[]> {
-    return this.blogModel.find().exec();
+  async findAll(limit, page): Promise<Blog[]> {
+    return this.blogModel.find().skip((page - 1 )* limit).limit(limit).exec();
   }
 
   async findOne(id: string): Promise<Blog | null> {
