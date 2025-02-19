@@ -12,8 +12,8 @@ export class BlogsService {
     return newBlog.save();
   }
 
-  async findAll(limit, page): Promise<Blog[]> {
-    return this.blogModel.find().skip((page - 1 )* limit).limit(limit).exec();
+  async findAll(limit: number, page: number): Promise<Blog[]> {
+    return this.blogModel.find().skip((page - 1) * limit).limit(limit).exec();
   }
 
   async findOne(id: string): Promise<Blog | null> {
