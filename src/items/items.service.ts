@@ -10,7 +10,7 @@ export class ItemsService {
     constructor(@InjectModel(Item.name) private readonly itemModel: Model<Item>) { }
 
     async createItem(createItemDto: CreateItemDto) {
-
+        //console.log("ITEMS ",createItemDto)
         const item = await (await this.itemModel.create(createItemDto)).save()
 
         if (!item) {
@@ -45,14 +45,14 @@ export class ItemsService {
 
         // Add price range filter if price is provided
         if (price !== undefined) {
-            filter.price = { 
-                $elemMatch: { cost : { $lte:  Number(price) } } // ✅ Checks if at least one cost is <= given price
+            filter.price = {
+                $elemMatch: { cost: { $lte: Number(price) } } // ✅ Checks if at least one cost is <= given price
             };
         }
 
         // Fetch items from database
         const items = await this.itemModel
-            .find(filter, { _id: 0, __v: 0 }) // Exclude _id and __v fields
+            .find(filter, { __v: 0 }) // Exclude _id and __v fields
             .sort(sort).skip((page - 1) * limit) // Skip items for pagination
             .limit(limit) // Limit the number of results
             .exec();
@@ -87,6 +87,7 @@ export class ItemsService {
 
 
     async updateItem(id: string, updateItemDto: UpdateItemDto) {
+      //  console.log(updateItemDto)
         const updatedItem = await this.itemModel.findByIdAndUpdate(
             id,
             { $set: updateItemDto }, // Only update provided fields

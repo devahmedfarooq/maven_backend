@@ -16,12 +16,12 @@ export class Review {
     rating: number;
 }
 export class KeyValue {
-    @Prop({ enum: ['select', 'checkbox', 'options', 'select', 'date', 'time'] })
-    type: string
+    @Prop({ enum: ['text', 'number', 'select', 'checkbox', 'date', 'time', 'datetime', 'textarea'] })
+    type: string;
+
     @Prop()
-    key: string
-    @Prop({ type: mongoose.Schema.Types.Mixed })  // ✅ Allows any type of data
-    value: any;
+    key: string;
+
 }
 
 // Price Schema
@@ -60,6 +60,9 @@ export class Item {
 
     @Prop({ type: String })
     location: string
+
+    @Prop({ type: [KeyValue] })
+    keyvalue: [KeyValue]
 }
 
 // Generate Mongoose Schemas
