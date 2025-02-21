@@ -74,15 +74,18 @@ export class CreateBookingDto {
     @Type(() => AppointmentDto)
     appointment?: AppointmentDto;
 
+    @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => KeyValueDto)
     details: KeyValueDto[];
 
+    @IsOptional()
     @ValidateNested()
     @Type(() => SummaryDto)
     summary: SummaryDto;
 
+    @IsOptional()
     @ValidateNested()
     @Type(() => PersonalInformationDto)
     personalInfo: PersonalInformationDto;
