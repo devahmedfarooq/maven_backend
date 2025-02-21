@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import mongoose, { Model } from "mongoose";
 import { Booking, BookingDocument } from "./schema/booking.schema";
 import { CreateBookingDto } from "./dto/create-booking.dto";
 import { UpdateBookingDto } from "./dto/update-booking.dto";
@@ -12,7 +12,6 @@ export class BookingService {
     async createBooking(createBookingDto: CreateBookingDto): Promise<Booking> {
         // Step 1: Create details and (optional) appointment
         const { appointment, details, summary, personalInfo } = createBookingDto;
-
         // Step 2: Validate the summary
         if (summary.total !== summary.subtotal + summary.gst) {
             throw new Error("Total amount does not match subtotal + GST.");
@@ -59,7 +58,10 @@ export class BookingService {
      * ✅ Get a single booking by ID
      */
     async getBookingById(id: string): Promise<Booking> {
+      //  console.log("ID : ", id)
+
         const booking = await this.bookingModel.findById(id);
+       // console.log("Booking: ", booking)
         if (!booking) {
             throw new NotFoundException("Booking not found.");
         }
