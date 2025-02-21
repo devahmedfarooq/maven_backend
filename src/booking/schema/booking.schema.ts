@@ -86,13 +86,13 @@ export class Booking {
     @Prop({ type: Appointment })
     appointment?: Appointment;
 
-    @Prop({ type: [KeyValue], required: true })
+    @Prop({ type: [KeyValue], required: false })
     details: KeyValue[];
 
-    @Prop({ type: Summary, required: true })
+    @Prop({ type: Summary, required: false })
     summary: Summary;
 
-    @Prop({ type: PersonalInformation, required: true })
+    @Prop({ type: PersonalInformation, required: false })
     personalInfo: PersonalInformation;
 }
 
