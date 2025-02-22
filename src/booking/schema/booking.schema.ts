@@ -20,7 +20,7 @@ export class PersonalInformation {
     @Prop({ required: true })
     name: string;
 
-    @Prop({ required: true, unique: true })
+    @Prop({ required: true })
     email: string;
 
     @Prop({ required: true })
@@ -43,6 +43,9 @@ export class Items {
 
     @Prop({ required: true, type: Number })
     amount: number;
+
+    @Prop({required : true, type : String})
+    id : string 
 }
 
 @Schema({ _id: false, versionKey: false })
@@ -71,7 +74,7 @@ export class Appointment {
 
 @Schema({ _id: false, versionKey: false })
 export class KeyValue {
-    @Prop({ required: true, enum: ["checkbox", "options", "select", "date", "time"] })
+    @Prop({ required: true, enum: ['text', 'number', 'select', 'checkbox', 'date', 'time', 'datetime', 'textarea'] })
     type: string;
 
     @Prop({ required: true })

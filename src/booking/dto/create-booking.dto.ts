@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsArray, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, isString, IsString, ValidateNested } from "class-validator";
 
 export class AppointmentDto {
     @IsDate()
@@ -13,7 +13,7 @@ export class AppointmentDto {
 }
 
 export class KeyValueDto {
-    @IsEnum(["checkbox", "options", "select", "date", "time"])
+    @IsEnum(['text', 'number', 'select', 'checkbox', 'date', 'time', 'datetime', 'textarea'])
     type: string;
 
     @IsString()
@@ -21,6 +21,9 @@ export class KeyValueDto {
     key: string;
 
     value: any;
+
+
+
 }
 
 export class ItemsDto {
@@ -33,6 +36,9 @@ export class ItemsDto {
 
     @IsNumber()
     amount: number;
+
+    @IsNotEmpty()
+    id : string 
 }
 
 export class SummaryDto {
@@ -83,7 +89,7 @@ export class CreateBookingDto {
     @IsOptional()
     @ValidateNested()
     @Type(() => SummaryDto)
-    summary: SummaryDto;
+    summary: SummaryDto;   
 
     @IsOptional()
     @ValidateNested()

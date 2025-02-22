@@ -30,6 +30,7 @@ export class BookingService {
     }
 
     async updateBooking(id: string, updateBookingDto: UpdateBookingDto): Promise<Booking> {
+        console.log(updateBookingDto)
         const updatedBooking = await this.bookingModel.findByIdAndUpdate(id, updateBookingDto, { new: true, runValidators: true });
 
         if (!updatedBooking) {
