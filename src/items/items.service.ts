@@ -76,7 +76,7 @@ export class ItemsService {
     }
 
     async getItem(id: string) {
-        const item = await this.itemModel.findById(id, { _id: 0 }).exec()
+        const item = await this.itemModel.findById(id).exec()
 
         if (!item) {
             throw new HttpException("No Item Found", HttpStatus.NOT_FOUND)
@@ -87,7 +87,7 @@ export class ItemsService {
 
 
     async updateItem(id: string, updateItemDto: UpdateItemDto) {
-      //  console.log(updateItemDto)
+        //  console.log(updateItemDto)
         const updatedItem = await this.itemModel.findByIdAndUpdate(
             id,
             { $set: updateItemDto }, // Only update provided fields
