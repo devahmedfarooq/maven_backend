@@ -9,7 +9,7 @@ import { UpdateBookingDto } from "./dto/update-booking.dto";
 export class BookingService {
     constructor(@InjectModel(Booking.name) private bookingModel: Model<BookingDocument>) { }
 
-    async createBooking(createBookingDto: CreateBookingDto): Promise<Booking> {
+    async createBooking(createBookingDto: CreateBookingDto, req: Request): Promise<Booking> {
         // Step 1: Create details and (optional) appointment
         const { appointment, details, summary, personalInfo } = createBookingDto;
         // Step 2: Validate the summary
@@ -22,7 +22,9 @@ export class BookingService {
             appointment: appointment ?? null,
             details,
             summary,
-            personalInfo
+            personalInfo,
+            userId: req['user'].id,
+            status: 'pending'
         });
 
         await newBooking.save();
@@ -59,10 +61,10 @@ export class BookingService {
      * ✅ Get a single booking by ID
      */
     async getBookingById(id: string): Promise<Booking> {
-      //  console.log("ID : ", id)
+        //  console.log("ID : ", id)
 
         const booking = await this.bookingModel.findById(id);
-       // console.log("Booking: ", booking)
+        // console.log("Booking: ", booking)
         if (!booking) {
             throw new NotFoundException("Booking not found.");
         }

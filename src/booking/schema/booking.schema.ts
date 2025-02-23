@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document, Mongoose } from "mongoose";
 
 export type BookingDocument = Booking & Document;
 
@@ -44,8 +44,8 @@ export class Items {
     @Prop({ required: true, type: Number })
     amount: number;
 
-    @Prop({required : true, type : String})
-    id : string 
+    @Prop({ required: true, type: String })
+    id: string
 }
 
 @Schema({ _id: false, versionKey: false })
@@ -97,6 +97,12 @@ export class Booking {
 
     @Prop({ type: PersonalInformation, required: false })
     personalInfo: PersonalInformation;
+
+    @Prop({ type: mongoose.Types.ObjectId })
+    userId: mongoose.Types.ObjectId
+
+    @Prop({ type: 'string', enum: ['pending', 'complete'], default: 'pending' })
+    status: string
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);

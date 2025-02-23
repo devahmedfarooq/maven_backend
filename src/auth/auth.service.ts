@@ -44,12 +44,12 @@ export class AuthService {
     }
 
     const token: string = jwt.sign(
-      { ...loginUserDto, role: user.role, validated: user.otp.verified },
+      { ...loginUserDto, role: user.role, validated: user.otp.verified, id: user._id },
       this.jwtSecret,
       { expiresIn: '7d' },
     );
 
-    return { token, verified: user.otp.verified, email: user.email };
+    return { token, verified: user.otp.verified, email: user.email, id: user._id };
   }
 
   async register(registerUserDto: RegisterUserDto): Promise<User> {

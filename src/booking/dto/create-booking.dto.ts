@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
 import { IsArray, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, isString, IsString, ValidateNested } from "class-validator";
+import mongoose from "mongoose";
 
 export class AppointmentDto {
     @IsDate()
@@ -95,4 +96,5 @@ export class CreateBookingDto {
     @ValidateNested()
     @Type(() => PersonalInformationDto)
     personalInfo: PersonalInformationDto;
+
 }
