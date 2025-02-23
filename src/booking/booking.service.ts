@@ -50,13 +50,12 @@ export class BookingService {
         user: any
     ): Promise<{ data: Booking[]; total: number }> {
         const skip = (page - 1) * limit;
-
-
         // Apply user-specific filtering
+       // console.log(user)
         if (user.role !== 'admin') {
             filters.userId = user.id;
         }
-
+        console.log("Filters ", filters)
         const [bookings, total] = await Promise.all([
             this.bookingModel.find(filters).skip(skip).limit(limit).exec(),
             this.bookingModel.countDocuments(filters),

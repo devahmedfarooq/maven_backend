@@ -52,6 +52,51 @@ export class AuthService {
     return { token, verified: user.otp.verified, email: user.email, id: user._id };
   }
 
+
+  async adminLogin(loginUserDto: LoginUserDto) {
+    const { email, password } = loginUserDto;
+
+    if (!email || !password) {
+      throw new HttpException(
+        'Email Or Password Not Sent!',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const user = await this.userModel.findOne(
+      { email },
+      { email: 1, role: 1, password: 1, otp: 1 },
+    );
+
+    if (!user) {
+      throw new HttpException(
+        'User Not Found With This Email',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (user.role != 'admin') {
+      throw new HttpException(
+        'Admin Not Found With This Email',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const check: boolean = await bcrypt.compare(password, user.password);
+
+    if (!check) {
+      throw new HttpException("Password Don't Match", HttpStatus.UNAUTHORIZED);
+    }
+
+    const token: string = jwt.sign(
+      { ...loginUserDto, role: user.role, validated: user.otp.verified, id: user._id },
+      this.jwtSecret,
+      { expiresIn: '7d' },
+    );
+
+    return { token, verified: user.otp.verified, email: user.email, id: user._id };
+  }
+
   async register(registerUserDto: RegisterUserDto): Promise<User> {
     const { password, email, phone, name } = registerUserDto;
 
