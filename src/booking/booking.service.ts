@@ -46,28 +46,29 @@ export class BookingService {
     async getAllBookings(
         page = 1,
         limit = 10,
+        filters: any,
         user: any
     ): Promise<{ data: Booking[]; total: number }> {
         const skip = (page - 1) * limit;
-        let  filters: any = {}
+
 
         // Apply user-specific filtering
         if (user.role !== 'admin') {
             filters.userId = user.id;
         }
-    
+
         const [bookings, total] = await Promise.all([
             this.bookingModel.find(filters).skip(skip).limit(limit).exec(),
             this.bookingModel.countDocuments(filters),
         ]);
-    
+
         if (!bookings || bookings.length === 0) {
             throw new NotFoundException('No bookings found.');
         }
-    
+
         return { data: bookings, total };
     }
-    
+
 
     /**
      * ✅ Get a single booking by ID
