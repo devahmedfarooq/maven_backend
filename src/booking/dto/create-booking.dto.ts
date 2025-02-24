@@ -40,6 +40,9 @@ export class ItemsDto {
 
     @IsNotEmpty()
     id : string 
+
+    @IsNotEmpty()
+    img : string
 }
 
 export class SummaryDto {
