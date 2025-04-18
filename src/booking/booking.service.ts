@@ -4,10 +4,11 @@ import mongoose, { Model } from "mongoose";
 import { Booking, BookingDocument } from "./schema/booking.schema";
 import { CreateBookingDto } from "./dto/create-booking.dto";
 import { UpdateBookingDto } from "./dto/update-booking.dto";
+import { NotificationService } from "src/notification/notification.service";
 
 @Injectable()
 export class BookingService {
-    constructor(@InjectModel(Booking.name) private bookingModel: Model<BookingDocument>) { }
+    constructor(@InjectModel(Booking.name) private bookingModel: Model<BookingDocument>, private readonly notificationService: NotificationService) { }
 
     async createBooking(createBookingDto: CreateBookingDto, req: Request): Promise<Booking> {
         // Step 1: Create details and (optional) appointment
@@ -28,6 +29,7 @@ export class BookingService {
         });
 
         await newBooking.save();
+        this.notificationService.logAction("New Booking Created", "Booking", String(newBooking._id))
         return newBooking;
     }
 
@@ -38,6 +40,7 @@ export class BookingService {
         if (!updatedBooking) {
             throw new NotFoundException("Booking not found");
         }
+        this.notificationService.logAction("Booking Updated", "Booking", String(updatedBooking._id))
 
         return updatedBooking;
     }
@@ -51,7 +54,7 @@ export class BookingService {
     ): Promise<{ data: Booking[]; total: number }> {
         const skip = (page - 1) * limit;
         // Apply user-specific filtering
-       // console.log(user)
+        // console.log(user)
         if (user.role !== 'admin') {
             filters.userId = user.id;
         }
@@ -90,6 +93,8 @@ export class BookingService {
         if (!deleted) {
             throw new NotFoundException("Booking not found.");
         }
+
+        this.notificationService.logAction("Booking Deleted", "Booking", String(deleted._id))
 
         return { message: "Booking successfully deleted" };
     }

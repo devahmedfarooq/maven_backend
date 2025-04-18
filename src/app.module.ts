@@ -1,12 +1,12 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { CacheModule } from '@nestjs/cache-manager'
+/* import { CacheModule } from '@nestjs/cache-manager'
 import { createKeyv } from '@keyv/redis';
 import { Keyv } from 'keyv';
 import { CacheableMemory } from 'cacheable';
 import { RedisService } from './redis/redis.service';
-import { RateLimitMiddleware } from './rate-limiter/rate-limiter.middleware';
+import { RateLimitMiddleware } from './rate-limiter/rate-limiter.middleware'; */
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
@@ -16,7 +16,9 @@ import { ItemsModule } from './items/items.module';
 import { EcommerceModule } from './ecommerce/ecommerce.module';
 import { UtilsModule } from './utils/utils.module';
 import { BlogsModule } from './blogs/blogs.module';
-
+import { NotificationService } from './notification/notification.service';
+import { Notification, NotificationSchema } from './notification/schemas/notification.schema';
+import { NotificationMiddleware } from './notification/notification.middleware';
 
 @Module({
   imports: [/* CacheModule.registerAsync({
@@ -37,12 +39,16 @@ import { BlogsModule } from './blogs/blogs.module';
         uri: "mongodb://localhost:27017/rev9mongo"
       }
     }
-  }), AuthModule, AdminModule, UsersModule, BookingModule, ItemsModule, EcommerceModule, UtilsModule, BlogsModule],
-  controllers: [AppController],
-  providers: [AppService/* , RedisService */],
+  }), AuthModule, AdminModule, UsersModule, BookingModule, ItemsModule, EcommerceModule, UtilsModule, BlogsModule, MongooseModule.forFeature([{ name: Notification.name, schema: NotificationSchema }]),
+  ],
+  controllers: [AppController,],
+  exports: [NotificationService],
+  providers: [AppService/* , RedisService */, NotificationService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     /* consumer.apply(RateLimitMiddleware).forRoutes('*'); */ // Apply to all routes
+    /* consumer.apply(NotificationMiddleware).forRoutes('*'); */ // Apply to all routes
+
   }
 }

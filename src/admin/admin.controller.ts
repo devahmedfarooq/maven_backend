@@ -4,6 +4,7 @@ import { updateRatelimitDto } from './dto/updateRateLimit.dto';
 import { AdminService } from './admin.service';
 import { CreateAdsDto } from './dto/createAds.dto';
 import { UpdateAdsDto } from './dto/updateAds.dto';
+import { GetAdsDto } from './dto/get-ads.dto';
 
 
 
@@ -21,25 +22,22 @@ export class AdminController {
 
 
     @Post('/ads')
-    @UseGuards(AdminGuard)
 
     async createNewAds(@Body() createAdsDto: CreateAdsDto, @Req() req: Request) {
         return await this.adminService.createAds(createAdsDto)
     }
 
     @Get("/ads")
-    async getAds() {
-        return await this.adminService.getAds()
+    async getAds(@Query() query: GetAdsDto) {
+        return await this.adminService.getAds(query);
     }
 
     @Patch('/ads/:id')
-    @UseGuards(AdminGuard)
     async updateAds(@Body() updateAdsDto: UpdateAdsDto, @Param("id") id: string) {
         return await this.adminService.updateAds(id, updateAdsDto)
     }
 
     @Patch('/increment/:id')
-    @UseGuards(AdminGuard)
     async incrementAds(@Param("id") id: string, @Query("index") index: number) {
         return await this.adminService.getAndIncrementAds(id, index)
     }
@@ -53,6 +51,12 @@ export class AdminController {
     @Get("/ads/:id")
     async getAd(@Param("id") id: string) {
         return await this.adminService.getAd(id)
+    }
+
+
+    @Get('/feed')
+    async getFeed() {
+        return await this.adminService.adminFeed()
     }
 
 }

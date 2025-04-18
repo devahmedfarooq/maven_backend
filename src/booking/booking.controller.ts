@@ -3,6 +3,7 @@ import { BookingService } from './booking.service';
 import { CreateBookingDto } from "./dto/create-booking.dto";
 import { UpdateBookingDto } from "./dto/update-booking.dto";
 import { AuthGuard } from "src/auth/auth.guard";
+import { AdminGuard } from "src/admin/admin.guard";
 @Controller('booking')
 export class BookingController {
   constructor(private readonly bookingService: BookingService) { }
@@ -13,7 +14,7 @@ export class BookingController {
   }
 
   @Get("")
-  @UseGuards(AuthGuard)
+  @UseGuards(AdminGuard)
   async getAllBookings(@Query() query: any, @Req() req: Request) {
     let { page = 1, limit = 10, ...filters } = query;
     return this.bookingService.getAllBookings(page, limit, filters, req['user']);
