@@ -21,6 +21,7 @@ export class AuthController {
 
     @Post('/admin-login')
     async adminLogin(@Body() loginUserDto: LoginUserDto) {
+        console.log("loginUserDto : " , loginUserDto)
         const token = await this.authService.adminLogin(loginUserDto);
         return {
             token
