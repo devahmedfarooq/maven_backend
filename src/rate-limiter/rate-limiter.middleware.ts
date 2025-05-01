@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import Redis from 'ioredis';
+//import Redis from 'ioredis';
 import * as jwt from 'jsonwebtoken';
 
 const DEFAULT_LIMITS = {
@@ -12,10 +12,10 @@ const PUBLIC_ROUTES = ['/public', '/', '/auth/fake-token'];
 
 @Injectable()
 export class RateLimitMiddleware implements NestMiddleware {
-  private redisClient: Redis;
+  // private redisClient: Redis;
 
   constructor() {
-    this.redisClient = new Redis({ host: 'localhost', port: 6379 });
+ //   this.redisClient = new Redis({ host: 'localhost', port: 6379 });
   }
 
   async use(req: Request, res: Response, next: NextFunction) {
@@ -44,11 +44,11 @@ export class RateLimitMiddleware implements NestMiddleware {
 
       let routeConfig: Record<string, string> = {};
       try {
-        if (email) {
+    /*     if (email) {
           routeConfig = await this.redisClient.hgetall(`rate-limit-config:${route}-auth`);
         } else {
           routeConfig = await this.redisClient.hgetall(`rate-limit-config:${route}`);
-        }
+        } */
       } catch (error) {
         console.error('Redis error while fetching rate limits:', error);
       }
@@ -85,13 +85,13 @@ export class RateLimitMiddleware implements NestMiddleware {
 
       let currentRequests = 0;
       try {
-        currentRequests = await this.redisClient.incr(key);
+       // currentRequests = await this.redisClient.incr(key);
       } catch (error) {
         console.error('Redis error while incrementing request count:', error);
       }
 
       if (currentRequests === 1) {
-        await this.redisClient.expire(key, window);
+   //     await this.redisClient.expire(key, window);
       }
 
       if (currentRequests > limit) {
@@ -103,10 +103,10 @@ export class RateLimitMiddleware implements NestMiddleware {
         });
       }
 
-      const ttl = await this.redisClient.ttl(key);
+    //  const ttl = await this.redisClient.ttl(key);
       res.setHeader('X-RateLimit-Limit', limit);
       res.setHeader('X-RateLimit-Remaining', Math.max(0, limit - currentRequests));
-      res.setHeader('X-RateLimit-Reset', ttl);
+   //   res.setHeader('X-RateLimit-Reset', ttl);
 
       next();
     } catch (error) {
