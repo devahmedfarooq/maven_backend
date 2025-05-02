@@ -15,15 +15,9 @@ import { GetAdsDto } from './dto/get-ads.dto';
 @Injectable()
 export class AdminService {
 
-    private redisClient: Redis;
-    constructor(
-        @InjectModel(Ads.name) private readonly adsModel: Model<Ads>,
-        @InjectModel(Notification.name) private readonly notificationModel: Model<Notification>,
-        @InjectModel(User.name) private readonly userModel: Model<User>,
-        @InjectModel(Booking.name) private readonly bookingModel: Model<Booking>,
-        @InjectModel(Item.name) private readonly itemModel: Model<Item>,
-    ) {
-        this.redisClient = new Redis({ host: 'localhost', port: 6379 });
+  //  private redisClient: Redis;
+    constructor(@InjectModel(Ads.name) private readonly adsModel: Model<Ads>) {
+    //    this.redisClient = new Redis({ host: 'localhost', port: 6379 });
     }
 
 
@@ -36,20 +30,6 @@ export class AdminService {
         }
 
 
-        if (role && role == 'auth') {
-            await this.redisClient.hmset(`rate-limit-config:${route}-${role}`, {
-                limit: limit.toString(),
-                window: timeWindow.toString(),
-                role: role.toString()
-            });
-        } else {
-            await this.redisClient.hmset(`rate-limit-config:${route}`, {
-                limit: limit.toString(),
-                window: timeWindow.toString()
-            });
-        }
-
-        // Store the limit for the specific route in Redis
 
 
         return {

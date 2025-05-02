@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument } from "mongoose";
-
+import {MainCategory} from '../../category/schemas/category.schema'
 export type ItemDocument = HydratedDocument<Item>;
 
 // Review Schema
@@ -55,8 +55,8 @@ export class Item {
     @Prop({ type: [Review], default: [] })
     reviews: Review[];
 
-    @Prop({ type: String, required: true, enum: ["hotel", "cars", "service"] })
-    type: string
+    @Prop({ type: mongoose.Types.ObjectId, required: true, ref : MainCategory.name  })
+    type: mongoose.Types.ObjectId
 
     @Prop({ type: String })
     location: string
