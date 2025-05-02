@@ -6,10 +6,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Ads } from './schema/ads.schema';
 import mongoose, { Model } from 'mongoose';
 import { UpdateAdsDto } from './dto/updateAds.dto';
-
-
-
-
+import { Notification } from '../notification/schemas/notification.schema'
+import { User } from 'src/auth/schemas/user.schema';
+import { Item } from 'src/items/schema/Items.schema';
+import { Booking } from 'src/booking/schema/booking.schema';
+import { GetAdsDto } from './dto/get-ads.dto';
 
 @Injectable()
 export class AdminService {
@@ -51,14 +52,63 @@ export class AdminService {
         });
     }
 
-    async getAds() {
-        const ads = await this.adsModel.find({}, { _id: 0, __v: 0, createdAt: 0 }).lean();
+    async getAds(query: GetAdsDto) {
+        const { page = 1, limit = 10, title, startDate, endDate, minClicks, minViews } = query;
+        const skip = (page - 1) * limit;
+
+        // Build filter conditions
+        const filter: any = {};
+
+        if (title) {
+            filter['ads.title'] = { $regex: title, $options: 'i' };
+        }
+
+        if (startDate || endDate) {
+            filter['ads.campinStart'] = {};
+            if (startDate) {
+                filter['ads.campinStart'].$gte = startDate;
+            }
+            if (endDate) {
+                filter['ads.campinStart'].$lte = endDate;
+            }
+        }
+
+        if (minClicks !== undefined) {
+            filter['ads.clicked'] = { $gte: minClicks };
+        }
+
+        if (minViews !== undefined) {
+            filter['ads.viewed'] = { $gte: minViews };
+        }
+
+        // Get total count for pagination
+        const totalDocs = await this.adsModel.countDocuments(filter);
+        const totalPages = Math.ceil(totalDocs / limit);
+
+        // Get paginated and filtered results
+        const ads = await this.adsModel.find(
+            filter,
+            { __v: 0, createdAt: 0 }
+        )
+        .skip(skip)
+        .limit(limit)
+        .lean();
 
         if (!ads || ads.length === 0) {
             throw new HttpException('No ads found', HttpStatus.NOT_FOUND);
         }
 
-        return ads;
+        return {
+            data: ads,
+            pagination: {
+                total: totalDocs,
+                page,
+                limit,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
+        };
     }
 
 
@@ -127,5 +177,59 @@ export class AdminService {
             }
         });
     }
+
+
+
+    async adminFeed() {
+        try {
+            // Get Ads statistics
+            const adsStats = await this.adsModel.aggregate([
+                { $unwind: "$ads" },
+                {
+                    $group: {
+                        _id: null,
+                        totalAds: { $sum: 1 },
+                        totalClicked: { $sum: "$ads.clicked" },
+                        totalViewed: { $sum: "$ads.viewed" }
+                    }
+                }
+            ]);
+    
+            // Get total users and their subscription breakdown
+            const userStats = await this.userModel.aggregate([
+                {
+                    $group: {
+                        _id: null,
+                        totalUsers: { $sum: 1 },
+                        subscribedUsers: { $sum: { $cond: [{ $eq: ["$subscribed", true] }, 1, 0] } },
+                        unsubscribedUsers: { $sum: { $cond: [{ $eq: ["$subscribed", false] }, 1, 0] } }
+                    }
+                }
+            ]);
+    
+            // Get total bookings and total items
+            const totalBookings = await this.bookingModel.countDocuments();
+            const totalItems = await this.itemModel.countDocuments();
+    
+            // Get the latest 10 notifications
+            const notifications = await this.notificationModel
+                .find()
+                .sort({ createdAt: -1 })
+                .limit(10)
+                .lean();
+    
+            return {
+                adsStats: adsStats[0] || { totalAds: 0, totalClicked: 0, totalViewed: 0 },
+                userStats: userStats[0] || { totalUsers: 0, subscribedUsers: 0, unsubscribedUsers: 0 },
+                totalBookings,
+                totalItems,
+                notifications
+            };
+        } catch (error) {
+            throw new HttpException("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+
 
 }

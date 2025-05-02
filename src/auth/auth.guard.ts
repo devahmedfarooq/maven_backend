@@ -13,10 +13,13 @@ export class AuthGuard implements CanActivate {
 
     try {
       const token = authHeader.split(' ')[1];
+      //    console.log("Token ", token)
       const decoded = jwt.verify(token, process.env.JWTSECRET ?? 'REV9TASKAHMED');
-      if (!decoded['validated']) {
-        throw new UnauthorizedException('Otp not validated');
-      }
+      //  console.log("decoded ", decoded)
+
+      // if (!decoded['validated']) {
+      //   throw new UnauthorizedException('Otp not validated');
+      // }
       req['user'] = decoded;
       return true;
     } catch (error) {

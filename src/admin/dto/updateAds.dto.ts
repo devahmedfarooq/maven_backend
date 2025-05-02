@@ -1,5 +1,5 @@
-import { IsString, IsOptional, IsNumber, IsDate, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsOptional, IsNumber, IsDate, ValidateNested, IsArray } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 export class UpdateAdsImageDto {
     @IsOptional()
@@ -23,12 +23,14 @@ export class UpdateAdsImageDto {
     readonly href?: string;
 
     @IsOptional()
+    @Transform(({ value }) => new Date(value))
     @IsDate()
     readonly campinStart?: Date;
 }
 
 export class UpdateAdsDto {
     @IsOptional()
+    @IsArray()
     @ValidateNested({ each: true })
     @Type(() => UpdateAdsImageDto)
     readonly ads?: UpdateAdsImageDto[];

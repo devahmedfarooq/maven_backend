@@ -7,47 +7,53 @@ import { ValidateOtp } from './dtos/validateOtp.dto';
 import { ForgetPasswordDto } from './dtos/forgot.dto';
 import { ResetPasswordDto } from './dtos/resetPassword.dto';
 
-
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
     @Post('/login')
     async login(@Body() loginUserDto: LoginUserDto) {
-        const token = await this.authService.login(loginUserDto)
+        const token = await this.authService.login(loginUserDto);
         return {
             token
-        }
+        };
+    }
+
+    @Post('/admin-login')
+    async adminLogin(@Body() loginUserDto: LoginUserDto) {
+        console.log("loginUserDto : " , loginUserDto)
+        const token = await this.authService.adminLogin(loginUserDto);
+        return {
+            token
+        };
     }
 
     @Post('/register')
     async register(@Body() registerUserDto: RegisterUserDto) {
-        return await this.authService.register(registerUserDto)
+        return await this.authService.register(registerUserDto);
     }
 
-
+    @UseGuards(AuthGuard)
     @Get('/otp')
     async genrateOtp(@Req() req: Request) {
-        const { email } = req['user']
-        return await this.authService.otpGenrator(email)
+        const { email } = req['user'];
+        return await this.authService.otpGenrator(email);
     }
 
+    @UseGuards(AuthGuard)
     @Post('/otp')
     async validateOtp(@Req() req: Request, @Body() validateOtp: ValidateOtp) {
-        const { email } = req['user']
-        return await this.authService.validateOtp(email, validateOtp)
+        const { email } = req['user'];
+        return await this.authService.validateOtp(email, validateOtp);
     }
-
 
     @Post('/forget-password')
     async forgetPassword(@Body() forgetpasswordDto: ForgetPasswordDto) {
-        return this.authService.forgetPassword(forgetpasswordDto.email)
+        return this.authService.forgetPassword(forgetpasswordDto.email);
     }
-
 
     @Post('/reset-password')
     async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-        return this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.newPassword)
+        return this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.newPassword);
     }
-
 }

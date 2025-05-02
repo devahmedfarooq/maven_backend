@@ -10,7 +10,7 @@ export class ItemsService {
     constructor(@InjectModel(Item.name) private readonly itemModel: Model<Item>) { }
 
     async createItem(createItemDto: CreateItemDto) {
-
+        //console.log("ITEMS ",createItemDto)
         const item = await (await this.itemModel.create(createItemDto)).save()
 
         if (!item) {
@@ -26,12 +26,34 @@ export class ItemsService {
 
     }
 
-    async getItems(page: number = 1, limit: number = 10, type?: string) {
-        const filter = type ? { type } : {}; // If type is provided, filter by it; otherwise, get all items
+    async getItems(page: number = 1, limit: number = 10, type?: string, search?: string, rating?: string, price?: string) {
+        let filter: any = type ? { type } : {}; // If type is provided, filter by it; otherwise, get all items
 
+        // Add text search if search query is provided
+        const sort: any = {};
+        if (search) {
+            filter.$text = { $search: search };
+            sort.score = { $meta: 'textScore' }; // Only apply sorting if text search is used
+        }
+
+        // Add rating filter (exact match) if provided
+        if (rating !== undefined) {
+            filter.reviews = {
+                $elemMatch: { rating: Number(rating) } // ✅ At least one review must have the exact rating
+            };
+        }
+
+        // Add price range filter if price is provided
+        if (price !== undefined) {
+            filter.price = {
+                $elemMatch: { cost: { $lte: Number(price) } } // ✅ Checks if at least one cost is <= given price
+            };
+        }
+
+        // Fetch items from database
         const items = await this.itemModel
-            .find(filter, { _id: 0, __v: 0 })
-            .skip((page - 1) * limit) // Skip items for pagination
+            .find(filter, { __v: 0 }) // Exclude _id and __v fields
+            .sort(sort).skip((page - 1) * limit) // Skip items for pagination
             .limit(limit) // Limit the number of results
             .exec();
 
@@ -54,7 +76,7 @@ export class ItemsService {
     }
 
     async getItem(id: string) {
-        const item = await this.itemModel.findById(id, { _id: 0 }).exec()
+        const item = await this.itemModel.findById(id).exec()
 
         if (!item) {
             throw new HttpException("No Item Found", HttpStatus.NOT_FOUND)
@@ -65,6 +87,7 @@ export class ItemsService {
 
 
     async updateItem(id: string, updateItemDto: UpdateItemDto) {
+        //  console.log(updateItemDto)
         const updatedItem = await this.itemModel.findByIdAndUpdate(
             id,
             { $set: updateItemDto }, // Only update provided fields
@@ -99,7 +122,7 @@ export class ItemsService {
 
     async getTopItems() {
         try {
-            
+
             const result = await this.itemModel.aggregate([
                 {
                     $addFields: {
@@ -115,7 +138,9 @@ export class ItemsService {
                                 totalReviews: "$totalReviews",
                                 img: { $arrayElemAt: ["$imgs", 0] },
                                 title: "$title",
-                                type: "$type"
+                                type: "$type",
+                                price: "$price",
+                                location: "$location"
                             }
                         }
                     }
