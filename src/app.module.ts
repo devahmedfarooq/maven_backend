@@ -17,7 +17,7 @@ import { CategoryModule } from './category/category.module';
   imports: [MongooseModule.forRootAsync({
     useFactory: async () => {
       return {
-        uri: "mongodb://localhost:27017/maven"
+        uri: "mongodb://localhost:27017/rev9mongo"
       }
     }
   }), AuthModule, AdminModule, UsersModule, BookingModule, ItemsModule, EcommerceModule, UtilsModule, BlogsModule, CategoryModule],

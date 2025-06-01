@@ -58,6 +58,9 @@ export class Item {
     @Prop({ type: mongoose.Types.ObjectId, required: true, ref : MainCategory.name  })
     type: mongoose.Types.ObjectId
 
+    @Prop()
+    subType : string
+
     @Prop({ type: String })
     location: string
 

@@ -101,7 +101,7 @@ export class Booking {
     @Prop({ type: mongoose.Types.ObjectId })
     userId: mongoose.Types.ObjectId
 
-    @Prop({ type: 'string', enum: ['pending', 'complete'], default: 'pending' })
+    @Prop({ type: 'string', enum: ['pending', 'contacted', 'declinded' ,'confirmed'], default: 'pending' })
     status: string
 }
 

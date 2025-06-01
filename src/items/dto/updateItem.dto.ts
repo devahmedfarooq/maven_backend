@@ -6,9 +6,11 @@ import {
     IsOptional,
     IsNotEmpty,
     Min,
-    Max
+    Max,
+    isNumber
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import mongoose from 'mongoose';
 
 // Review DTO
 class Review {
@@ -89,9 +91,11 @@ export class UpdateItemDto {
     reviews?: Review[];
 
     @IsOptional()
+    type?: mongoose.Types.ObjectId;
+
+    @IsOptional()
     @IsString()
-    @IsNotEmpty()
-    type?: "hotel" | "cars" | "service";
+    subType : string
 
     @IsOptional()
     @IsString()

@@ -38,6 +38,10 @@ export class CreateItemDto {
     type: string;
 
     @IsString()
+    @IsOptional()
+    subType : string
+
+    @IsString()
     @IsNotEmpty()
     location: string
 }

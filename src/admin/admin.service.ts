@@ -15,9 +15,13 @@ import { GetAdsDto } from './dto/get-ads.dto';
 @Injectable()
 export class AdminService {
 
-  //  private redisClient: Redis;
-    constructor(@InjectModel(Ads.name) private readonly adsModel: Model<Ads>) {
-    //    this.redisClient = new Redis({ host: 'localhost', port: 6379 });
+    //  private redisClient: Redis;
+    constructor(@InjectModel(Ads.name) private readonly adsModel: Model<Ads>,
+        @InjectModel(Notification.name) private readonly notificationModel: Model<Notification>,
+        @InjectModel(User.name) private readonly userModel: Model<User>,
+        @InjectModel(Booking.name) private readonly bookingModel: Model<Booking>,
+        @InjectModel(Item.name) private readonly itemModel: Model<Item>,) {
+        //    this.redisClient = new Redis({ host: 'localhost', port: 6379 });
     }
 
 
@@ -90,9 +94,9 @@ export class AdminService {
             filter,
             { __v: 0, createdAt: 0 }
         )
-        .skip(skip)
-        .limit(limit)
-        .lean();
+            .skip(skip)
+            .limit(limit)
+            .lean();
 
         if (!ads || ads.length === 0) {
             throw new HttpException('No ads found', HttpStatus.NOT_FOUND);
@@ -194,7 +198,7 @@ export class AdminService {
                     }
                 }
             ]);
-    
+
             // Get total users and their subscription breakdown
             const userStats = await this.userModel.aggregate([
                 {
@@ -206,18 +210,18 @@ export class AdminService {
                     }
                 }
             ]);
-    
+
             // Get total bookings and total items
             const totalBookings = await this.bookingModel.countDocuments();
             const totalItems = await this.itemModel.countDocuments();
-    
+
             // Get the latest 10 notifications
             const notifications = await this.notificationModel
                 .find()
                 .sort({ createdAt: -1 })
                 .limit(10)
                 .lean();
-    
+
             return {
                 adsStats: adsStats[0] || { totalAds: 0, totalClicked: 0, totalViewed: 0 },
                 userStats: userStats[0] || { totalUsers: 0, subscribedUsers: 0, unsubscribedUsers: 0 },
@@ -229,7 +233,7 @@ export class AdminService {
             throw new HttpException("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
 
 
 }

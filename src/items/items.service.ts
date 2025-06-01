@@ -55,6 +55,7 @@ export class ItemsService {
             .find(filter, { __v: 0 }) // Exclude _id and __v fields
             .sort(sort).skip((page - 1) * limit) // Skip items for pagination
             .limit(limit) // Limit the number of results
+            .populate('type')
             .exec();
 
         if (!items || items.length === 0) {
@@ -76,7 +77,7 @@ export class ItemsService {
     }
 
     async getItem(id: string) {
-        const item = await this.itemModel.findById(id).exec()
+        const item = await this.itemModel.findById(id).populate('type').exec()
 
         if (!item) {
             throw new HttpException("No Item Found", HttpStatus.NOT_FOUND)
