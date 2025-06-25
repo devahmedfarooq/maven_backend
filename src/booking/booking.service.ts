@@ -53,6 +53,8 @@ export class BookingService {
         user: any
     ): Promise<{ data: Booking[]; total: number }> {
         const skip = (page - 1) * limit;
+
+        console.log("User : ",user)
         // Apply user-specific filtering
         // console.log(user)
         if (user.role !== 'admin') {

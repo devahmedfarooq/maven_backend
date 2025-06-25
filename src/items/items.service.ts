@@ -4,10 +4,11 @@ import { Item } from './schema/Items.schema';
 import { Model } from 'mongoose';
 import { CreateItemDto } from './dto/createItem.dto';
 import { UpdateItemDto } from './dto/updateItem.dto';
+import { MainCategory } from 'src/category/schemas/category.schema';
 
 @Injectable()
 export class ItemsService {
-    constructor(@InjectModel(Item.name) private readonly itemModel: Model<Item>) { }
+    constructor(@InjectModel(Item.name) private readonly itemModel: Model<Item>, @InjectModel(MainCategory.name) private readonly mainCategoryModel: Model<MainCategory>) { }
 
     async createItem(createItemDto: CreateItemDto) {
         //console.log("ITEMS ",createItemDto)
@@ -28,6 +29,16 @@ export class ItemsService {
 
     async getItems(page: number = 1, limit: number = 10, type?: string, search?: string, rating?: string, price?: string) {
         let filter: any = type ? { type } : {}; // If type is provided, filter by it; otherwise, get all items
+        console.log("Category : ", type)
+        if (type) {
+            const category = await this.mainCategoryModel.findOne({
+                name: { $regex: new RegExp(`^${type}$`, 'i') }, // Case-insensitive match
+            }); console.log("Category : ", category)
+            if (!category) {
+                throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+            }
+            filter.type = category._id.toString(); // Now filter by the found category's ID
+        }
 
         // Add text search if search query is provided
         const sort: any = {};
@@ -50,6 +61,8 @@ export class ItemsService {
             };
         }
 
+        console.log("Filter", filter)
+
         // Fetch items from database
         const items = await this.itemModel
             .find(filter, { __v: 0 }) // Exclude _id and __v fields
@@ -57,7 +70,7 @@ export class ItemsService {
             .limit(limit) // Limit the number of results
             .populate('type')
             .exec();
-
+        console.log("Items : ", items)
         if (!items || items.length === 0) {
             throw new HttpException('No Items Found', HttpStatus.NOT_FOUND);
         }
@@ -127,19 +140,36 @@ export class ItemsService {
             const result = await this.itemModel.aggregate([
                 {
                     $addFields: {
-                        totalReviews: { $size: { $ifNull: ["$reviews", []] } }
+                        totalReviews: { $size: { $ifNull: ["$reviews", []] } },
+                        typeObjId: {
+                            $convert: {
+                                input: "$type",
+                                to: "objectId",
+                                onError: null,
+                                onNull: null
+                            }
+                        }
                     }
                 },
                 {
+                    $lookup: {
+                        from: "maincategories",
+                        localField: "typeObjId",
+                        foreignField: "_id",
+                        as: "type"
+                    }
+                },
+                { $unwind: "$type" },
+                {
                     $group: {
-                        _id: "$type",
+                        _id: "$type.name",
                         items: {
                             $push: {
                                 _id: "$_id",
                                 totalReviews: "$totalReviews",
                                 img: { $arrayElemAt: ["$imgs", 0] },
                                 title: "$title",
-                                type: "$type",
+                                type: "$type.name",
                                 price: "$price",
                                 location: "$location"
                             }
@@ -148,15 +178,21 @@ export class ItemsService {
                 },
                 {
                     $project: {
-                        _id: 1,
-                        items: { $slice: ["$items", 5] }
+                        _id: 0,
+                        k: "$_id",
+                        v: { $slice: ["$items", 5] }
                     }
                 },
-                { $unwind: "$items" },
                 {
-                    $replaceRoot: { newRoot: "$items" }
-                }
+                    $group: {
+                        _id: null,
+                        kvPairs: { $push: { k: "$k", v: "$v" } }
+                    }
+                },
+                { $replaceWith: { $arrayToObject: "$kvPairs" } }
             ]);
+
+
 
             if (!result || result.length === 0) {
                 throw new HttpException('No items found', HttpStatus.NOT_FOUND);
