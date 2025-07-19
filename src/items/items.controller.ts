@@ -10,7 +10,7 @@ export class ItemsController {
 
   @Get('/')
   async getItems(@Query('page') page: number, @Query('limit') limit: number, @Query('type') type?: string, @Query('search') search?: string, @Query('price') price?: string, @Query('rating') rating?: string) {
-    return await this.itemsService.getItems(page, limit, type?.toLowerCase().split(" ").join("-"), search, rating, price)
+    return await this.itemsService.getItems(page, limit, type, search, rating, price)
   }
 
   @Get('/feed')

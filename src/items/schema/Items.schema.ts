@@ -32,6 +32,21 @@ export class Price {
 
     @Prop({ required: true })
     type: string;
+
+    @Prop({ default: true })
+    isActive: boolean;
+
+    @Prop({ default: 1 })
+    minQuantity: number;
+
+    @Prop()
+    maxQuantity?: number;
+
+    @Prop()
+    description?: string;
+
+    @Prop({ default: 'PKR' })
+    currency: string;
 }
 
 // Item Schema

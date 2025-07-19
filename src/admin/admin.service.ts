@@ -12,6 +12,32 @@ import { Item } from 'src/items/schema/Items.schema';
 import { Booking } from 'src/booking/schema/booking.schema';
 import { GetAdsDto } from './dto/get-ads.dto';
 
+interface AdsFilter {
+  'ads.title'?: { $regex: string; $options: string };
+  'ads.campinStart'?: {
+    $gte?: string;
+    $lte?: string;
+  };
+  'ads.clicked'?: { $gte: number };
+  'ads.viewed'?: { $gte: number };
+}
+
+export interface DashboardStats {
+  adsStats: {
+    totalAds: number;
+    totalClicked: number;
+    totalViewed: number;
+  };
+  userStats: {
+    totalUsers: number;
+    subscribedUsers: number;
+    unsubscribedUsers: number;
+  };
+  totalBookings: number;
+  totalItems: number;
+  notifications: any[];
+}
+
 @Injectable()
 export class AdminService {
 
@@ -32,7 +58,6 @@ export class AdminService {
         if (!route || !limit || !timeWindow) {
             throw new ForbiddenException('Missing required fields');
         }
-
 
 
 
@@ -61,7 +86,7 @@ export class AdminService {
         const skip = (page - 1) * limit;
 
         // Build filter conditions
-        const filter: any = {};
+        const filter: AdsFilter = {};
 
         if (title) {
             filter['ads.title'] = { $regex: title, $options: 'i' };
@@ -70,10 +95,10 @@ export class AdminService {
         if (startDate || endDate) {
             filter['ads.campinStart'] = {};
             if (startDate) {
-                filter['ads.campinStart'].$gte = startDate;
+                filter['ads.campinStart'].$gte = startDate.toISOString();
             }
             if (endDate) {
-                filter['ads.campinStart'].$lte = endDate;
+                filter['ads.campinStart'].$lte = endDate.toISOString();
             }
         }
 
@@ -184,7 +209,7 @@ export class AdminService {
 
 
 
-    async adminFeed() {
+    async adminFeed(): Promise<DashboardStats> {
         try {
             // Get Ads statistics
             const adsStats = await this.adsModel.aggregate([

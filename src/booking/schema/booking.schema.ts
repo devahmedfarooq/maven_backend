@@ -4,18 +4,6 @@ import mongoose, { Document, Mongoose } from "mongoose";
 export type BookingDocument = Booking & Document;
 
 @Schema({ _id: false, versionKey: false })
-export class IdProof {
-    @Prop()
-    idCardfront?: string;
-
-    @Prop()
-    idCardback?: string;
-
-    @Prop()
-    passport?: string;
-}
-
-@Schema({ _id: false, versionKey: false })
 export class PersonalInformation {
     @Prop({ required: true })
     name: string;
@@ -28,9 +16,6 @@ export class PersonalInformation {
 
     @Prop()
     address: string;
-
-    @Prop({ type: IdProof, required: false })
-    idproof?: IdProof
 }
 
 @Schema({ _id: false, versionKey: false })

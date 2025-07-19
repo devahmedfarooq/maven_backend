@@ -13,9 +13,15 @@ export class BookingService {
     async createBooking(createBookingDto: CreateBookingDto, req: Request): Promise<Booking> {
         // Step 1: Create details and (optional) appointment
         const { appointment, details, summary, personalInfo } = createBookingDto;
-        // Step 2: Validate the summary
-        if (summary.total !== summary.subtotal + summary.gst) {
-            throw new Error("Total amount does not match subtotal + GST.");
+        
+        // Step 2: Validate the summary with proper floating point handling
+        if (summary && summary.subtotal !== undefined && summary.gst !== undefined && summary.total !== undefined) {
+            const calculatedTotal = summary.subtotal + summary.gst;
+            const tolerance = 0.01; // Allow for small floating point differences
+            
+            if (Math.abs(summary.total - calculatedTotal) > tolerance) {
+                throw new Error("Total amount does not match subtotal + GST.");
+            }
         }
 
         // Step 3: Create the booking entry

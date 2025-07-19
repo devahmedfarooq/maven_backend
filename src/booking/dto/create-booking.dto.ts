@@ -22,9 +22,6 @@ export class KeyValueDto {
     key: string;
 
     value: any;
-
-
-
 }
 
 export class ItemsDto {
@@ -99,5 +96,4 @@ export class CreateBookingDto {
     @ValidateNested()
     @Type(() => PersonalInformationDto)
     personalInfo: PersonalInformationDto;
-
 }

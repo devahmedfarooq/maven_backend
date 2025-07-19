@@ -9,6 +9,10 @@ export class MainCategory {
   @IsBoolean()
   @IsOptional()
   hasSubType?: boolean
+
+  @IsString()
+  @IsOptional()
+  icon?: string
 }
 
 export class Subcategories extends MainCategory {
