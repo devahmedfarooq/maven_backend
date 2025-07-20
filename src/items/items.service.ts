@@ -6,6 +6,7 @@ import { CreateItemDto } from './dto/createItem.dto';
 import { UpdateItemDto } from './dto/updateItem.dto';
 import { MainCategory } from 'src/category/schemas/category.schema';
 import { PricingService } from './pricing.service';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class ItemsService {
@@ -17,7 +18,30 @@ export class ItemsService {
 
     async createItem(createItemDto: CreateItemDto) {
         //console.log("ITEMS ",createItemDto)
-        const item = await (await this.itemModel.create(createItemDto)).save()
+        
+        // Handle type field conversion
+        let typeValue: any = createItemDto.type;
+        
+        // If type is a string (category name), convert to ObjectId
+        if (typeof typeValue === 'string' && !mongoose.Types.ObjectId.isValid(typeValue)) {
+            const category = await this.mainCategoryModel.findOne({
+                name: { $regex: new RegExp(`^${typeValue}$`, 'i') }
+            });
+            
+            if (!category) {
+                throw new HttpException(`Category '${typeValue}' not found`, HttpStatus.BAD_REQUEST);
+            }
+            
+            typeValue = category._id;
+        }
+        
+        // Create item with converted type
+        const itemData = {
+            ...createItemDto,
+            type: typeValue
+        };
+        
+        const item = await (await this.itemModel.create(itemData)).save()
 
         if (!item) {
             throw new HttpException("Error Creating Item", HttpStatus.NOT_IMPLEMENTED)
@@ -32,36 +56,23 @@ export class ItemsService {
 
     }
 
-    async getItems(page: number = 1, limit: number = 10, type?: string, search?: string, rating?: string, price?: string) {
+    async getItems(page: number = 1, limit: number = 10, type?: string, search?: string, rating?: string, price?: string, location?: string) {
         let filter: any = {}; // Start with empty filter
         console.log("Category : ", type)
         
         if (type) {
-            // First try to find category by exact name match
+            console.log("Looking for category with name:", type);
+            
+            // Try to find category by name (case-insensitive)
             let category = await this.mainCategoryModel.findOne({
-                name: { $regex: new RegExp(`^${type}$`, 'i') }, // Case-insensitive exact match
+                name: { $regex: new RegExp(`^${type}$`, 'i') }
             });
-            
-            // If not found, try with transformed name (lowercase, spaces to hyphens)
-            if (!category) {
-                const transformedType = type.toLowerCase().split(" ").join("-");
-                category = await this.mainCategoryModel.findOne({
-                    name: { $regex: new RegExp(`^${transformedType}$`, 'i') },
-                });
-            }
-            
-            // If still not found, try partial match
-            if (!category) {
-                category = await this.mainCategoryModel.findOne({
-                    name: { $regex: new RegExp(type, 'i') }, // Case-insensitive partial match
-                });
-            }
             
             console.log("Category found: ", category);
             
             if (!category) {
                 console.warn(`Category not found for type: ${type}`);
-                // Don't throw error, just return empty results
+                // Return empty results instead of throwing error
                 return {
                     items: [],
                     pagination: {
@@ -73,7 +84,13 @@ export class ItemsService {
                 };
             }
             
-            filter.type = category._id.toString(); // Now filter by the found category's ID
+            // Use the category's ObjectId for filtering items
+            filter.type = String(category._id);
+        }
+
+        // Add location filter if provided
+        if (location) {
+            filter.location = { $regex: new RegExp(location, 'i') }; // Case-insensitive location search
         }
 
         // Add text search if search query is provided
@@ -99,12 +116,13 @@ export class ItemsService {
 
         console.log("Filter", filter)
 
-        // Fetch items from database
+        // Fetch items from database with proper population
         const items = await this.itemModel
-            .find(filter, { __v: 0 }) // Exclude _id and __v fields
-            .sort(sort).skip((page - 1) * limit) // Skip items for pagination
+            .find(filter, { __v: 0 }) // Exclude __v field
+            .sort(sort)
+            .skip((page - 1) * limit) // Skip items for pagination
             .limit(limit) // Limit the number of results
-            .populate('type')
+            .populate('type', 'name') // Populate type field with category name
             .exec();
         console.log("Items : ", items)
         
@@ -167,9 +185,32 @@ export class ItemsService {
 
     async updateItem(id: string, updateItemDto: UpdateItemDto) {
         //  console.log(updateItemDto)
+        
+        // Handle type field conversion if provided
+        let updateData = { ...updateItemDto };
+        
+        if (updateItemDto.type) {
+            let typeValue: any = updateItemDto.type;
+            
+            // If type is a string (category name), convert to ObjectId
+            if (typeof typeValue === 'string' && !mongoose.Types.ObjectId.isValid(typeValue)) {
+                const category = await this.mainCategoryModel.findOne({
+                    name: { $regex: new RegExp(`^${typeValue}$`, 'i') }
+                });
+                
+                if (!category) {
+                    throw new HttpException(`Category '${typeValue}' not found`, HttpStatus.BAD_REQUEST);
+                }
+                
+                typeValue = category._id;
+            }
+            
+            updateData.type = typeValue;
+        }
+        
         const updatedItem = await this.itemModel.findByIdAndUpdate(
             id,
-            { $set: updateItemDto }, // Only update provided fields
+            { $set: updateData }, // Only update provided fields
             { new: true, runValidators: true } // Return updated document & apply schema validation
         );
 
@@ -198,7 +239,6 @@ export class ItemsService {
         return { message: `Item with ID ${id} successfully deleted` };
     }
 
-
     async getTopItems() {
         try {
 
@@ -207,11 +247,17 @@ export class ItemsService {
                     $addFields: {
                         totalReviews: { $size: { $ifNull: ["$reviews", []] } },
                         typeObjId: {
-                            $convert: {
-                                input: "$type",
-                                to: "objectId",
-                                onError: null,
-                                onNull: null
+                            $cond: {
+                                if: { $type: "$type" },
+                                then: {
+                                    $convert: {
+                                        input: "$type",
+                                        to: "objectId",
+                                        onError: null,
+                                        onNull: null
+                                    }
+                                },
+                                else: null
                             }
                         }
                     }
@@ -256,8 +302,6 @@ export class ItemsService {
                 },
                 { $replaceWith: { $arrayToObject: "$kvPairs" } }
             ]);
-
-
 
             if (!result || result.length === 0) {
                 throw new HttpException('No items found', HttpStatus.NOT_FOUND);

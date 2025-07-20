@@ -15,14 +15,6 @@ export class Review {
     @Prop({ required: true, min: 0, max: 5 })
     rating: number;
 }
-export class KeyValue {
-    @Prop({ enum: ['text', 'number', 'select', 'checkbox', 'date', 'time', 'datetime', 'textarea'] })
-    type: string;
-
-    @Prop()
-    key: string;
-
-}
 
 // Price Schema
 @Schema({ _id: false })
@@ -78,9 +70,6 @@ export class Item {
 
     @Prop({ type: String })
     location: string
-
-    @Prop({ type: [KeyValue] })
-    keyvalue: [KeyValue]
 }
 
 // Generate Mongoose Schemas
