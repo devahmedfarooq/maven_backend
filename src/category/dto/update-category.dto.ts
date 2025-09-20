@@ -11,5 +11,9 @@ export class UpdateCategoryDto {
 
   @IsOptional()
   @IsString({ each: true })
-  subName?: string[] 
+  subName?: string[]
+
+  @IsOptional()
+  @IsString()
+  icon?: string
 }

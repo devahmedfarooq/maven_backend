@@ -6,9 +6,11 @@ import {
     IsOptional,
     IsNotEmpty,
     Min,
-    Max
+    Max,
+    isNumber
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
+import mongoose from 'mongoose';
 
 // Review DTO
 class Review {
@@ -39,19 +41,25 @@ class Price {
     @IsString()
     @IsNotEmpty()
     type?: string;
-}
-
-// KeyValue DTO
-class KeyValue {
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    type?: string;
 
     @IsOptional()
+    isActive?: boolean;
+
+    @IsOptional()
+    @IsNumber()
+    minQuantity?: number;
+
+    @IsOptional()
+    @IsNumber()
+    maxQuantity?: number;
+
+    @IsOptional()
     @IsString()
-    @IsNotEmpty()
-    key?: string;
+    description?: string;
+
+    @IsOptional()
+    @IsString()
+    currency?: string;
 }
 
 // UpdateItemDto
@@ -90,14 +98,22 @@ export class UpdateItemDto {
 
     @IsOptional()
     @IsString()
-    @IsNotEmpty()
-    type?: "hotel" | "cars" | "service";
+    @Transform(({ value }) => {
+        // If it's already an ObjectId, return as is
+        if (mongoose.Types.ObjectId.isValid(value)) {
+            return value;
+        }
+        // If it's a string (category name), we'll handle conversion in service
+        return value;
+    })
+    type?: string;
+
+    @IsOptional()
+    @IsString()
+    subType : string
 
     @IsOptional()
     @IsString()
     @IsNotEmpty()
     location?: string;
-
-    @IsOptional()
-    keyvalue?: KeyValue[]
 }

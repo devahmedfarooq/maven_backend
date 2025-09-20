@@ -67,7 +67,7 @@ export class CategoryService {
     if (filters.hasSubType !== undefined) {
       query.hasSubType = filters.hasSubType
     }
-
+    console.log("Category Model HIt")
     return this.mainCategoryModel.find(query).exec()
   }
 

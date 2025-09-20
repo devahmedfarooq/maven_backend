@@ -23,6 +23,9 @@ export class AdsImage {
 
     @Prop({ type: Date, default: () => new Date() }) // FIXED: Dynamic default Date
     campinStart: Date
+
+    @Prop({type : Boolean, default : false})
+    active : boolean
 }
 
 export const AdsImageSchema = SchemaFactory.createForClass(AdsImage);

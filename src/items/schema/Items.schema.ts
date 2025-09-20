@@ -15,14 +15,6 @@ export class Review {
     @Prop({ required: true, min: 0, max: 5 })
     rating: number;
 }
-export class KeyValue {
-    @Prop({ enum: ['text', 'number', 'select', 'checkbox', 'date', 'time', 'datetime', 'textarea'] })
-    type: string;
-
-    @Prop()
-    key: string;
-
-}
 
 // Price Schema
 @Schema({ _id: false })
@@ -32,6 +24,21 @@ export class Price {
 
     @Prop({ required: true })
     type: string;
+
+    @Prop({ default: true })
+    isActive: boolean;
+
+    @Prop({ default: 1 })
+    minQuantity: number;
+
+    @Prop()
+    maxQuantity?: number;
+
+    @Prop()
+    description?: string;
+
+    @Prop({ default: 'PKR' })
+    currency: string;
 }
 
 // Item Schema
@@ -58,11 +65,11 @@ export class Item {
     @Prop({ type: mongoose.Types.ObjectId, required: true, ref : MainCategory.name  })
     type: mongoose.Types.ObjectId
 
+    @Prop()
+    subType : string
+
     @Prop({ type: String })
     location: string
-
-    @Prop({ type: [KeyValue] })
-    keyvalue: [KeyValue]
 }
 
 // Generate Mongoose Schemas

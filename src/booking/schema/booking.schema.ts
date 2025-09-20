@@ -4,18 +4,6 @@ import mongoose, { Document, Mongoose } from "mongoose";
 export type BookingDocument = Booking & Document;
 
 @Schema({ _id: false, versionKey: false })
-export class IdProof {
-    @Prop()
-    idCardfront?: string;
-
-    @Prop()
-    idCardback?: string;
-
-    @Prop()
-    passport?: string;
-}
-
-@Schema({ _id: false, versionKey: false })
 export class PersonalInformation {
     @Prop({ required: true })
     name: string;
@@ -28,9 +16,6 @@ export class PersonalInformation {
 
     @Prop()
     address: string;
-
-    @Prop({ type: IdProof, required: false })
-    idproof?: IdProof
 }
 
 @Schema({ _id: false, versionKey: false })
@@ -65,11 +50,17 @@ export class Summary {
 
 @Schema({ _id: false, versionKey: false })
 export class Appointment {
-    @Prop({ required: true, type: Date })
-    date: Date;
+    @Prop({ type: Date })
+    startDate?: Date;
 
-    @Prop({ required: true })
-    time: string;
+    @Prop()
+    startTime?: string;
+
+    @Prop({ type: Date })
+    endDate?: Date;
+
+    @Prop()
+    endTime?: string;
 }
 
 @Schema({ _id: false, versionKey: false })
@@ -101,7 +92,7 @@ export class Booking {
     @Prop({ type: mongoose.Types.ObjectId })
     userId: mongoose.Types.ObjectId
 
-    @Prop({ type: 'string', enum: ['pending', 'complete'], default: 'pending' })
+    @Prop({ type: 'string', enum: ['pending', 'contacted', 'declinded' ,'confirmed'], default: 'pending' })
     status: string
 }
 
