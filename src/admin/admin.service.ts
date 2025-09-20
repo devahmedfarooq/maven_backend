@@ -13,13 +13,8 @@ import { Booking } from 'src/booking/schema/booking.schema';
 import { GetAdsDto } from './dto/get-ads.dto';
 
 interface AdsFilter {
-  'ads.title'?: { $regex: string; $options: string };
-  'ads.campinStart'?: {
-    $gte?: string;
-    $lte?: string;
-  };
-  'ads.clicked'?: { $gte: number };
-  'ads.viewed'?: { $gte: number };
+  clicked?: { $gte: number };
+  viewed?: { $gte: number };
 }
 
 export interface DashboardStats {
@@ -82,37 +77,35 @@ export class AdminService {
     }
 
     async getAds(query: GetAdsDto) {
-        const { page = 1, limit = 10, title, startDate, endDate, minClicks, minViews } = query;
+        const { page = 1, limit = 10, title, startDate, endDate, minClicks, minViews, activeOnly = false } = query;
         const skip = (page - 1) * limit;
 
         // Build filter conditions
         const filter: AdsFilter = {};
 
-        if (title) {
-            filter['ads.title'] = { $regex: title, $options: 'i' };
-        }
-
-        if (startDate || endDate) {
-            filter['ads.campinStart'] = {};
-            if (startDate) {
-                filter['ads.campinStart'].$gte = startDate.toISOString();
-            }
-            if (endDate) {
-                filter['ads.campinStart'].$lte = endDate.toISOString();
-            }
-        }
+        // Note: Since we're flattening the data, we need to filter on the nested ads array
+        // and then flatten the results. For now, we'll remove these filters to get all ads.
+        // TODO: Implement proper filtering for flattened structure
 
         if (minClicks !== undefined) {
-            filter['ads.clicked'] = { $gte: minClicks };
+            filter.clicked = { $gte: minClicks };
         }
 
         if (minViews !== undefined) {
-            filter['ads.viewed'] = { $gte: minViews };
+            filter.viewed = { $gte: minViews };
         }
 
-        // Get total count for pagination
-        const totalDocs = await this.adsModel.countDocuments(filter);
+        // Get total count depending on activeOnly
+        const totalAgg = await this.adsModel.aggregate([
+            { $unwind: "$ads" },
+            ...(activeOnly ? [{ $match: { "ads.active": true } }] : []),
+            { $count: "total" }
+        ]);
+        
+        const totalDocs = totalAgg[0]?.total || 0;
         const totalPages = Math.ceil(totalDocs / limit);
+
+        console.log(`Total ads documents found: ${totalDocs}`);
 
         // Get paginated and filtered results
         const ads = await this.adsModel.find(
@@ -123,10 +116,108 @@ export class AdminService {
             .limit(limit)
             .lean();
 
-        if (!ads || ads.length === 0) {
-            throw new HttpException('No ads found', HttpStatus.NOT_FOUND);
+        console.log(`Retrieved ${ads.length} ads documents:`, ads);
+
+        // Debug: Log all ads to see their active status
+        console.log('All ads before filtering:');
+        ads.forEach(adDoc => {
+            console.log(`Document ${adDoc._id}:`);
+            if (adDoc.ads && adDoc.ads.length > 0) {
+                adDoc.ads.forEach((ad: any, index: number) => {
+                    console.log(`  Ad[${index}]: title="${ad.title}", active=${ad.active}, hasActiveField=${ad.hasOwnProperty('active')}`);
+                });
+            } else {
+                console.log(`  No ads array or empty ads array`);
+            }
+        });
+
+        // Flatten the ads array for client consumption. If activeOnly=true, filter for active ads
+        const flattenedAds = ads.flatMap(adDoc => 
+            (activeOnly ? adDoc.ads.filter((ad: any) => ad.active === true) : adDoc.ads)
+                .map((ad: any, index: number) => ({
+                    _id: adDoc._id,
+                    imgSrc: ad.imgSrc,
+                    title: ad.title,
+                    href: ad.href,
+                    campinStart: ad.campinStart,
+                    active: ad.active,
+                    clicked: ad.clicked || 0,
+                    viewed: ad.viewed || 0,
+                    imageIndex: index
+                }))
+        );
+
+        // Debug: Log all ads to see their active status
+        console.log('All ads before filtering:');
+        ads.forEach(adDoc => {
+            adDoc.ads.forEach((ad: any, index: number) => {
+                console.log(`Ad ${adDoc._id}[${index}]: title="${ad.title}", active=${ad.active}`);
+            });
+        });
+
+        console.log(`Flattened ${flattenedAds.length} ads:`, flattenedAds);
+
+        // Check if we have any flattened ads
+        if (!flattenedAds || flattenedAds.length === 0) {
+            return {
+                data: [],
+                pagination: {
+                    total: 0,
+                    page,
+                    limit,
+                    totalPages: 0,
+                    hasNextPage: false,
+                    hasPrevPage: false
+                }
+            };
         }
 
+        return {
+            data: flattenedAds,
+            pagination: {
+                total: totalDocs,
+                page,
+                limit,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
+        };
+    }
+
+    async getAdsForAdmin(query: GetAdsDto) {
+        const { page = 1, limit = 10, title, startDate, endDate, minClicks, minViews } = query;
+        const skip = (page - 1) * limit;
+
+        // Build filter conditions
+        const filter: AdsFilter = {};
+
+        if (minClicks !== undefined) {
+            filter.clicked = { $gte: minClicks };
+        }
+
+        if (minViews !== undefined) {
+            filter.viewed = { $gte: minViews };
+        }
+
+        // Get total count for admin (all ads)
+        const totalDocs = await this.adsModel.countDocuments(filter);
+        const totalPages = Math.ceil(totalDocs / limit);
+
+        console.log(`Total ads documents found for admin: ${totalDocs}`);
+
+        // Get paginated and filtered results
+        const ads = await this.adsModel.find(
+            filter,
+            { __v: 0, createdAt: 0 }
+        )
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        console.log(`Retrieved ${ads.length} ads documents for admin:`, ads);
+
+        // Return raw structure for admin panel (no flattening)
         return {
             data: ads,
             pagination: {
@@ -149,6 +240,35 @@ export class AdminService {
         }
 
         return ad;
+    }
+
+    async getAllAds() {
+        // Get all ads without filtering for active status
+        const ads = await this.adsModel.find({}, { __v: 0, createdAt: 0 }).lean();
+
+        console.log(`Retrieved ${ads.length} ads documents for debugging:`, ads);
+
+        // Flatten all ads (including inactive ones)
+        const flattenedAds = ads.flatMap(adDoc => 
+            adDoc.ads.map((ad: any, index: number) => ({
+                _id: adDoc._id,
+                imgSrc: ad.imgSrc,
+                title: ad.title,
+                href: ad.href,
+                campinStart: ad.campinStart,
+                active: ad.active,
+                clicked: ad.clicked || 0,
+                viewed: ad.viewed || 0,
+                imageIndex: index
+            }))
+        );
+
+        console.log(`Flattened ${flattenedAds.length} ads (including inactive):`, flattenedAds);
+
+        return {
+            data: flattenedAds,
+            total: flattenedAds.length
+        };
     }
 
 
@@ -205,6 +325,50 @@ export class AdminService {
                 delete ret.updatedAt;
             }
         });
+    }
+
+    async trackAdView(id: string, imageIndex: number) {
+        const ads = await this.adsModel.findById(id);
+
+        if (!ads) {
+            throw new HttpException('Ads not found', HttpStatus.NOT_FOUND);
+        }
+
+        if (imageIndex < 0 || imageIndex >= ads.ads.length) {
+            throw new HttpException('Invalid image index', HttpStatus.BAD_REQUEST);
+        }
+
+        // Increment only `viewed` for the Ads document
+        ads.viewed += 1;
+
+        // Increment only `viewed` for the specific AdsImage at `imageIndex`
+        ads.ads[imageIndex].viewed += 1;
+
+        await ads.save(); // Save the updated document
+
+        return { success: true, message: 'Ad view tracked successfully' };
+    }
+
+    async trackAdClick(id: string, imageIndex: number) {
+        const ads = await this.adsModel.findById(id);
+
+        if (!ads) {
+            throw new HttpException('Ads not found', HttpStatus.NOT_FOUND);
+        }
+
+        if (imageIndex < 0 || imageIndex >= ads.ads.length) {
+            throw new HttpException('Invalid image index', HttpStatus.BAD_REQUEST);
+        }
+
+        // Increment only `clicked` for the Ads document
+        ads.clicked += 1;
+
+        // Increment only `clicked` for the specific AdsImage at `imageIndex`
+        ads.ads[imageIndex].clicked += 1;
+
+        await ads.save(); // Save the updated document
+
+        return { success: true, message: 'Ad click tracked successfully' };
     }
 
 

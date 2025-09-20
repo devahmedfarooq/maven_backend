@@ -6,11 +6,20 @@ export class AppointmentDto {
     @IsDate()
     @IsOptional()
     @Type(() => Date)
-    date?: Date;
+    startDate?: Date;
 
     @IsString()
     @IsOptional()
-    time?: string;
+    startTime?: string;
+
+    @IsDate()
+    @IsOptional()
+    @Type(() => Date)
+    endDate?: Date;
+
+    @IsString()
+    @IsOptional()
+    endTime?: string;
 }
 
 export class KeyValueDto {

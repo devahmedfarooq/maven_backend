@@ -50,11 +50,17 @@ export class Summary {
 
 @Schema({ _id: false, versionKey: false })
 export class Appointment {
-    @Prop({ required: true, type: Date })
-    date: Date;
+    @Prop({ type: Date })
+    startDate?: Date;
 
-    @Prop({ required: true })
-    time: string;
+    @Prop()
+    startTime?: string;
+
+    @Prop({ type: Date })
+    endDate?: Date;
+
+    @Prop()
+    endTime?: string;
 }
 
 @Schema({ _id: false, versionKey: false })
