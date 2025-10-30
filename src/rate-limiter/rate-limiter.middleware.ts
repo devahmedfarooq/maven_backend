@@ -1,4 +1,5 @@
 import { HttpStatus, Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Request, Response, NextFunction } from 'express';
 //import Redis from 'ioredis';
 import * as jwt from 'jsonwebtoken';
@@ -14,7 +15,7 @@ const PUBLIC_ROUTES = ['/public', '/', '/auth/fake-token'];
 export class RateLimitMiddleware implements NestMiddleware {
   // private redisClient: Redis;
 
-  constructor() {
+  constructor(private readonly configService: ConfigService) {
  //   this.redisClient = new Redis({ host: 'localhost', port: 6379 });
   }
 
@@ -34,7 +35,8 @@ export class RateLimitMiddleware implements NestMiddleware {
 
         if (token) {
           try {
-            const decoded = jwt.verify(token, process.env.JWTSECRET ?? 'REV9TASKAHMED') as { email: string };
+            const jwtSecret = this.configService.get<string>('JWT_SECRET') || 'REV9TASKAHMED';
+            const decoded = jwt.verify(token, jwtSecret) as { email: string };
             email = decoded.email;
           } catch (error) {
             throw new UnauthorizedException('Invalid token');

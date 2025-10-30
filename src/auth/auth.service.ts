@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import { LoginUserDto } from './dtos/login.dto';
 import { RegisterUserDto } from './dtos/register.dto';
@@ -10,10 +11,13 @@ import { ValidateOtp } from './dtos/validateOtp.dto';
 
 @Injectable()
 export class AuthService {
-  private readonly jwtSecret = process.env.JWTSECERT ?? 'REV9TASKAHMED';
+  private readonly jwtSecret: string;
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
-  ) { }
+    private readonly configService: ConfigService,
+  ) { 
+    this.jwtSecret = this.configService.get<string>('JWT_SECRET') || 'REV9TASKAHMED';
+  }
 
   async login(loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;

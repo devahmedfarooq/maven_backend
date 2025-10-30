@@ -1,4 +1,5 @@
 import { Injectable, ForbiddenException, HttpException, HttpStatus } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { updateRatelimitDto } from './dto/updateRateLimit.dto';
 import { CreateAdsDto } from './dto/createAds.dto';
@@ -41,8 +42,11 @@ export class AdminService {
         @InjectModel(Notification.name) private readonly notificationModel: Model<Notification>,
         @InjectModel(User.name) private readonly userModel: Model<User>,
         @InjectModel(Booking.name) private readonly bookingModel: Model<Booking>,
-        @InjectModel(Item.name) private readonly itemModel: Model<Item>,) {
-        //    this.redisClient = new Redis({ host: 'localhost', port: 6379 });
+        @InjectModel(Item.name) private readonly itemModel: Model<Item>,
+        private readonly configService: ConfigService,) {
+        //    const redisHost = this.configService.get<string>('REDIS_HOST') || 'localhost';
+        //    const redisPort = this.configService.get<number>('REDIS_PORT') || 6379;
+        //    this.redisClient = new Redis({ host: redisHost, port: redisPort });
     }
 
 
