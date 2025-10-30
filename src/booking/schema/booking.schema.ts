@@ -1,26 +1,14 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document, Mongoose } from "mongoose";
 
 export type BookingDocument = Booking & Document;
-
-@Schema({ _id: false, versionKey: false })
-export class IdProof {
-    @Prop()
-    idCardfront?: string;
-
-    @Prop()
-    idCardback?: string;
-
-    @Prop()
-    passport?: string;
-}
 
 @Schema({ _id: false, versionKey: false })
 export class PersonalInformation {
     @Prop({ required: true })
     name: string;
 
-    @Prop({ required: true, unique: true })
+    @Prop({ required: true })
     email: string;
 
     @Prop({ required: true })
@@ -28,9 +16,6 @@ export class PersonalInformation {
 
     @Prop()
     address: string;
-
-    @Prop({ type: IdProof, required: false })
-    idproof?: IdProof
 }
 
 @Schema({ _id: false, versionKey: false })
@@ -43,6 +28,9 @@ export class Items {
 
     @Prop({ required: true, type: Number })
     amount: number;
+
+    @Prop({ required: true, type: String })
+    id: string
 }
 
 @Schema({ _id: false, versionKey: false })
@@ -62,16 +50,22 @@ export class Summary {
 
 @Schema({ _id: false, versionKey: false })
 export class Appointment {
-    @Prop({ required: true, type: Date })
-    date: Date;
+    @Prop({ type: Date })
+    startDate?: Date;
 
-    @Prop({ required: true })
-    time: string;
+    @Prop()
+    startTime?: string;
+
+    @Prop({ type: Date })
+    endDate?: Date;
+
+    @Prop()
+    endTime?: string;
 }
 
 @Schema({ _id: false, versionKey: false })
 export class KeyValue {
-    @Prop({ required: true, enum: ["checkbox", "options", "select", "date", "time"] })
+    @Prop({ required: true, enum: ['text', 'number', 'select', 'checkbox', 'date', 'time', 'datetime', 'textarea'] })
     type: string;
 
     @Prop({ required: true })
@@ -86,14 +80,20 @@ export class Booking {
     @Prop({ type: Appointment })
     appointment?: Appointment;
 
-    @Prop({ type: [KeyValue], required: true })
+    @Prop({ type: [KeyValue], required: false })
     details: KeyValue[];
 
-    @Prop({ type: Summary, required: true })
+    @Prop({ type: Summary, required: false })
     summary: Summary;
 
-    @Prop({ type: PersonalInformation, required: true })
+    @Prop({ type: PersonalInformation, required: false })
     personalInfo: PersonalInformation;
+
+    @Prop({ type: mongoose.Types.ObjectId })
+    userId: mongoose.Types.ObjectId
+
+    @Prop({ type: 'string', enum: ['pending', 'contacted', 'declinded' ,'confirmed'], default: 'pending' })
+    status: string
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);

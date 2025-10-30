@@ -1,19 +1,29 @@
 import { Type } from "class-transformer";
-import { IsArray, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, isString, IsString, ValidateNested } from "class-validator";
+import mongoose from "mongoose";
 
 export class AppointmentDto {
     @IsDate()
     @IsOptional()
     @Type(() => Date)
-    date?: Date;
+    startDate?: Date;
 
     @IsString()
     @IsOptional()
-    time?: string;
+    startTime?: string;
+
+    @IsDate()
+    @IsOptional()
+    @Type(() => Date)
+    endDate?: Date;
+
+    @IsString()
+    @IsOptional()
+    endTime?: string;
 }
 
 export class KeyValueDto {
-    @IsEnum(["checkbox", "options", "select", "date", "time"])
+    @IsEnum(['text', 'number', 'select', 'checkbox', 'date', 'time', 'datetime', 'textarea'])
     type: string;
 
     @IsString()
@@ -33,6 +43,12 @@ export class ItemsDto {
 
     @IsNumber()
     amount: number;
+
+    @IsNotEmpty()
+    id : string 
+
+    @IsNotEmpty()
+    img : string
 }
 
 export class SummaryDto {
@@ -74,15 +90,18 @@ export class CreateBookingDto {
     @Type(() => AppointmentDto)
     appointment?: AppointmentDto;
 
+    @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => KeyValueDto)
     details: KeyValueDto[];
 
+    @IsOptional()
     @ValidateNested()
     @Type(() => SummaryDto)
-    summary: SummaryDto;
+    summary: SummaryDto;   
 
+    @IsOptional()
     @ValidateNested()
     @Type(() => PersonalInformationDto)
     personalInfo: PersonalInformationDto;

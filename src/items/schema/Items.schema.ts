@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument } from "mongoose";
-
+import {MainCategory} from '../../category/schemas/category.schema'
 export type ItemDocument = HydratedDocument<Item>;
 
 // Review Schema
@@ -15,14 +15,6 @@ export class Review {
     @Prop({ required: true, min: 0, max: 5 })
     rating: number;
 }
-export class KeyValue {
-    @Prop({ enum: ['select', 'checkbox', 'options', 'select', 'date', 'time'] })
-    type: string
-    @Prop()
-    key: string
-    @Prop({ type: mongoose.Schema.Types.Mixed })  // ✅ Allows any type of data
-    value: any;
-}
 
 // Price Schema
 @Schema({ _id: false })
@@ -32,6 +24,21 @@ export class Price {
 
     @Prop({ required: true })
     type: string;
+
+    @Prop({ default: true })
+    isActive: boolean;
+
+    @Prop({ default: 1 })
+    minQuantity: number;
+
+    @Prop()
+    maxQuantity?: number;
+
+    @Prop()
+    description?: string;
+
+    @Prop({ default: 'PKR' })
+    currency: string;
 }
 
 // Item Schema
@@ -55,8 +62,11 @@ export class Item {
     @Prop({ type: [Review], default: [] })
     reviews: Review[];
 
-    @Prop({ type: String, required: true, enum: ["hotel", "cars", "service"] })
-    type: string
+    @Prop({ type: mongoose.Types.ObjectId, required: true, ref : MainCategory.name  })
+    type: mongoose.Types.ObjectId
+
+    @Prop()
+    subType : string
 
     @Prop({ type: String })
     location: string
@@ -65,4 +75,8 @@ export class Item {
 // Generate Mongoose Schemas
 export const ReviewSchema = SchemaFactory.createForClass(Review);
 export const PriceSchema = SchemaFactory.createForClass(Price);
-export const ItemSchema = SchemaFactory.createForClass(Item);
+const ItemSchema = SchemaFactory.createForClass(Item);
+ItemSchema.index({ title: 'text', subtitle: 'text' })
+export {
+    ItemSchema
+}

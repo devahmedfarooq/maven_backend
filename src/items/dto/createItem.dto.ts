@@ -1,5 +1,6 @@
 import { IsArray, IsString, IsNumber, ValidateNested, IsOptional, IsNotEmpty } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
+import mongoose from 'mongoose';
 
 class Price {
     @IsNumber()
@@ -8,6 +9,25 @@ class Price {
     @IsString()
     @IsNotEmpty()
     type: string;
+
+    @IsOptional()
+    isActive?: boolean;
+
+    @IsOptional()
+    @IsNumber()
+    minQuantity?: number;
+
+    @IsOptional()
+    @IsNumber()
+    maxQuantity?: number;
+
+    @IsOptional()
+    @IsString()
+    description?: string;
+
+    @IsOptional()
+    @IsString()
+    currency?: string;
 }
 
 export class CreateItemDto {
@@ -35,7 +55,19 @@ export class CreateItemDto {
 
     @IsString()
     @IsNotEmpty()
+    @Transform(({ value }) => {
+        // If it's already an ObjectId, return as is
+        if (mongoose.Types.ObjectId.isValid(value)) {
+            return value;
+        }
+        // If it's a string (category name), we'll handle conversion in service
+        return value;
+    })
     type: string;
+
+    @IsString()
+    @IsOptional()
+    subType : string
 
     @IsString()
     @IsNotEmpty()
