@@ -70,8 +70,9 @@ export class AdminService {
         // Return selected fields (excluding _id, __v, and timestamps)
         return newAds.toObject({
             versionKey: false,  // Removes __v
-            transform: (_, ret) => {
+            transform: (_, ret: any) => {
                 delete ret._id; // Removes _id
+                return ret;
             }
         });
     }
@@ -319,10 +320,11 @@ export class AdminService {
 
         return ads.toObject({
             versionKey: false, // Removes __v
-            transform: (_, ret) => {
+            transform: (_, ret: any) => {
                 delete ret._id; // Removes _id
                 delete ret.createdAt;
                 delete ret.updatedAt;
+                return ret;
             }
         });
     }

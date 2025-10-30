@@ -49,10 +49,11 @@ export class ItemsService {
 
         return item.toObject({
             versionKey: false,
-            transform: (_, ret) => {
-                delete ret._id
+            transform: (_, ret: any) => {
+                delete ret._id;
+                return ret;
             }
-        })
+        });
 
     }
 
@@ -220,9 +221,10 @@ export class ItemsService {
 
         return updatedItem.toObject({
             versionKey: false, // Removes __v
-            transform: (_, ret) => {
+            transform: (_, ret: any) => {
                 delete ret._id; // Removes _id
                 delete ret.createdAt;
+                return ret;
             }
         });
     }
