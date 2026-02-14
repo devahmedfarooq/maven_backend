@@ -14,7 +14,7 @@ export class BookingController {
   }
 
   @Get("")
-  @UseGuards(AdminGuard)
+  @UseGuards( AuthGuard)
   async getAllBookings(@Query() query: any, @Req() req: Request) {
     let { page = 1, limit = 10, ...filters } = query;
     return this.bookingService.getAllBookings(page, limit, filters, req['user']);

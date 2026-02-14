@@ -1,4 +1,4 @@
-import { IsOptional, IsNumber, IsString, IsDate, Min } from 'class-validator';
+import { IsOptional, IsNumber, IsString, IsDate, Min, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class GetAdsDto {
@@ -39,4 +39,9 @@ export class GetAdsDto {
     @IsNumber()
     @Min(0)
     readonly minViews?: number;
+
+    @IsOptional()
+    @Type(() => Boolean)
+    @IsBoolean()
+    readonly activeOnly?: boolean;
 } 

@@ -10,20 +10,30 @@ export class UsersService {
     constructor(@InjectModel(User.name) private readonly userModel: Model<User>) { }
 
     async profileSetting(profileSettingDto: ProfileSettingDto, identifier: string) {
-        let user = await this.userModel.findOne({ _id: identifier }).exec();
-    
-        if (!user) {
-            user = await this.userModel.findOne({ email: identifier }).exec();
+        // First check if identifier is a valid MongoDB ObjectId
+        const isObjectId = /^[0-9a-fA-F]{24}$/.test(identifier);
+        
+        let query;
+        if (isObjectId) {
+            query = { _id: identifier };
+        } else {
+            // Validate email format if not an ObjectId
+            if (!identifier.includes('@')) {
+                throw new HttpException("Invalid identifier format", HttpStatus.BAD_REQUEST);
+            }
+            query = { email: identifier.toLowerCase() }; // normalize email
         }
     
+        const user = await this.userModel.findOne(query).exec();
+        
         if (!user) {
             throw new HttpException("User Not Found", HttpStatus.NOT_FOUND);
         }
     
         const updatedUser = await this.userModel.findOneAndUpdate(
-            { _id: user._id }, // Update by _id
-            { $set: profileSettingDto }, // Update fields
-            { new: true } // Return updated document
+            { _id: user._id }, // Always update by _id once user is found
+            { $set: profileSettingDto },
+            { new: true }
         ).exec();
     
         return {

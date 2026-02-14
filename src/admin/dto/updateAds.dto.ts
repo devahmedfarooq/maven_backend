@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, IsDate, ValidateNested, IsArray } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsDate, ValidateNested, IsArray, IsBoolean } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class UpdateAdsImageDto {
@@ -26,6 +26,10 @@ export class UpdateAdsImageDto {
     @Transform(({ value }) => new Date(value))
     @IsDate()
     readonly campinStart?: Date;
+    
+    @IsOptional()
+    @IsBoolean()
+    readonly active? : boolean
 }
 
 export class UpdateAdsDto {
@@ -42,4 +46,6 @@ export class UpdateAdsDto {
     @IsOptional()
     @IsNumber()
     readonly viewed?: number;
+
+
 }

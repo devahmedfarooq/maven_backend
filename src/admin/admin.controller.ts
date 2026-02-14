@@ -32,6 +32,16 @@ export class AdminController {
         return await this.adminService.getAds(query);
     }
 
+    @Get("/ads/admin")
+    async getAdsForAdmin(@Query() query: GetAdsDto) {
+        return await this.adminService.getAdsForAdmin(query);
+    }
+
+    @Get("/ads/all")
+    async getAllAds() {
+        return await this.adminService.getAllAds();
+    }
+
     @Patch('/ads/:id')
     async updateAds(@Body() updateAdsDto: UpdateAdsDto, @Param("id") id: string) {
         return await this.adminService.updateAds(id, updateAdsDto)
@@ -40,6 +50,16 @@ export class AdminController {
     @Patch('/increment/:id')
     async incrementAds(@Param("id") id: string, @Query("index") index: number) {
         return await this.adminService.getAndIncrementAds(id, index)
+    }
+
+    @Patch('/track-view/:id')
+    async trackAdView(@Param("id") id: string, @Query("index") index: number) {
+        return await this.adminService.trackAdView(id, index)
+    }
+
+    @Patch('/track-click/:id')
+    async trackAdClick(@Param("id") id: string, @Query("index") index: number) {
+        return await this.adminService.trackAdClick(id, index)
     }
 
     @Delete('/ads/:id')

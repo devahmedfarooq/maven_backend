@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString, IsStrongPassword } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, IsStrongPassword, Matches } from 'class-validator';
 
 export class RegisterUserDto {
     @IsNotEmpty({ message: 'Name is required' })
@@ -8,7 +8,8 @@ export class RegisterUserDto {
     @IsEmail({}, { message: 'Invalid email format' })
     readonly email: string;
 
-    @IsPhoneNumber("PK", { message: 'Invalid phone number' }) // `null` uses default region
+    @IsString({ message: 'Phone number must be a string' })
+    @Matches(/^(\+?[1-9]\d{1,14}|\d{10,15})$/, { message: 'Invalid phone number format' })
     readonly phone: string;
 
     @IsNotEmpty({ message: 'Password cannot be empty' })

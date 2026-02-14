@@ -12,8 +12,38 @@ export class BlogController {
   }
 
   @Get()
-  async findAll(@Query('limit') limit: number = 5, @Query('page') page: number = 1): Promise<Blog[]> {
-    return this.BlogsService.findAll(limit, page);
+  async findAll(
+    @Query('limit') limit: number = 5, 
+    @Query('page') page: number = 1,
+    @Query('location') location?: string
+  ): Promise<Blog[]> {
+    return this.BlogsService.findAll(limit, page, location);
+  }
+
+  @Get('location/:location')
+  async findByLocation(
+    @Param('location') location: string,
+    @Query('limit') limit: number = 10,
+    @Query('page') page: number = 1
+  ): Promise<Blog[]> {
+    return this.BlogsService.getBlogsByLocation(location, limit, page);
+  }
+
+  @Get('location-specific/:location')
+  async findLocationSpecific(
+    @Param('location') location: string,
+    @Query('limit') limit: number = 10,
+    @Query('page') page: number = 1
+  ): Promise<Blog[]> {
+    return this.BlogsService.getLocationSpecificBlogs(location, limit, page);
+  }
+
+  @Get('global')
+  async getGlobalBlogs(
+    @Query('limit') limit: number = 10,
+    @Query('page') page: number = 1
+  ): Promise<Blog[]> {
+    return this.BlogsService.getGlobalBlogs(limit, page);
   }
 
   @Get(':id')

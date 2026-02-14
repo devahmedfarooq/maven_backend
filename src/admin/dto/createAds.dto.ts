@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsDate, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsDate, IsOptional, IsBoolean } from 'class-validator';
 
 
 class AdsImageDto {
@@ -23,6 +23,9 @@ class AdsImageDto {
     @IsDate()
     readonly campinStart?: Date;
 
+    @IsOptional()
+    @IsBoolean()
+    readonly active? : boolean
 }
 
 
@@ -38,5 +41,4 @@ export class CreateAdsDto {
     @IsOptional()
     @IsNumber()
     readonly viewed?: number;
-
 }
