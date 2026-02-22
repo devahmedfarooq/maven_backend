@@ -1,26 +1,21 @@
 # Base image
-FROM node:20.12.0
+FROM node:20.12.0-alpine 
 
-# Create app directory
+# 1. Use Alpine for a much smaller footprint (1/4 the size)
 WORKDIR /usr/src/app
 
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# 2. Copy only dependency files first
 COPY package*.json ./
 
-# Install app dependencies
+# 3. Install dependencies (this layer is now cached)
 RUN npm install
 
-# Bundle app source
+# 4. Copy source code (Keep this AFTER npm install)
 COPY . .
 
-# Copy the .env and .env.development files
-COPY .env ./
-
-# Creates a "dist" folder with the production build
+# 5. Build the app
 RUN npm run build
 
-# Expose the port on which the app will run
 EXPOSE 3000
 
-# Start the server using the production build
 CMD ["npm", "run", "start:prod"]
