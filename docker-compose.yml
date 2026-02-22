@@ -1,8 +1,6 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: mavens-api:latest  # ✅ Use pre-built image (NO rebuild)
     container_name: mavens-api
     ports:
       - "3000:3000"
