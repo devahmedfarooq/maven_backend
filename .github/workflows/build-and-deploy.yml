@@ -11,6 +11,17 @@ jobs:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
+      
+      - name: 🔍 Debug Find Docker Files
+        run: |
+          echo "📁 Working directory: $(pwd)"
+          echo "📋 All files:"
+          ls -laR
+          echo "🔎 Finding Dockerfile:"
+          find . -name "Dockerfile*" -type f
+          echo "🔎 Finding docker-compose.yml:"
+          find . -name "docker-compose.yml" -type f
+
       - name: 🐳 Build Docker image
         run: |
           echo "Building Docker image..."
