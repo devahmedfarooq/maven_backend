@@ -34,6 +34,8 @@ jobs:
           
           echo "Copying docker-compose.yml..."
           cp docker-compose.yml ~/apps/nest/
+
+          cp Dockerfile ~/apps/nest/
           
           echo "Copying .env from server (preserving secrets)..."
           # .env stays on server, not in repo
