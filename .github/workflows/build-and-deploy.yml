@@ -37,10 +37,10 @@ jobs:
           cd ~/apps/nest
           
           echo "Stopping old containers..."
-          docker-compose down
+          docker compose down
           
           echo "Starting new containers..."
-          docker-compose up -d
+          docker compose up -d
           
           echo "Cleaning up old images..."
           docker image prune -f
