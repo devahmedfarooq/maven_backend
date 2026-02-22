@@ -11,60 +11,28 @@ jobs:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      
-      - name: 🔍 Debug Find Docker Files
-        run: |
-          echo "📁 Working directory: $(pwd)"
-          echo "📋 All files:"
-          ls -laR
-          echo "🔎 Finding Dockerfile:"
-          find . -name "Dockerfile*" -type f
-          echo "🔎 Finding docker-compose.yml:"
-          find . -name "docker-compose.yml" -type f
-
       - name: 🐳 Build Docker image
         run: |
           echo "Building Docker image..."
-          docker build -t mavens-api:latest .
+          docker build -t mavens-api:latest -f ./dockerfile .
 
       - name: 🚀 Deploy with Docker Compose
         run: |
-          echo "Creating deployment directory..."
-          mkdir -p ~/apps/nest
-          
-          echo "Copying docker-compose.yml..."
-          cp docker-compose.yml ~/apps/nest/
-
-          cp . ~/apps/nest/
-          
-          echo "Copying .env from server (preserving secrets)..."
-          # .env stays on server, not in repo
-          if [ -f ~/apps/nest/.env ]; then
-            echo "✓ Existing .env found"
-          else
-            echo "⚠️ .env not found! Create it manually at ~/apps/nest/.env"
-            exit 1
-          fi
-          
-          echo "Navigating to deployment directory..."
           cd ~/apps/nest
           
           echo "Stopping old containers..."
           docker compose down
           
-          echo "Starting new containers..."
-          docker compose up -d
+          echo "Starting new containers (using pre-built image)..."
+          docker compose up -d  # NO --build flag!
           
-          echo "Cleaning up old images..."
+          echo "Cleaning up..."
           docker image prune -f
           
           echo "✅ Deployment complete!"
 
       - name: 🏥 Health Check
         run: |
-          echo "Waiting for service to start..."
           sleep 15
-          echo "Checking container status..."
           docker ps --filter "name=mavens-api"
-          echo "Checking logs..."
           docker logs mavens-api --tail 30
