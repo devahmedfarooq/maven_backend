@@ -1,20 +1,4 @@
 services:
-  admin:
-    build:
-      context: ../maven_admin
-      dockerfile: Dockerfile
-    container_name: mavens-admin
-    ports:
-      - "3001:3001"
-    env_file:
-      - ../maven_admin/.env
-    environment:
-      # These override the .env file to ensure containers can talk to each other
-      - MONGODB_URI=mongodb://db:27017/mavens
-    depends_on:
-      - db
-    networks:
-      - mavens-network
   app:
     build:
       context: .
@@ -54,7 +38,7 @@ services:
 
 networks:
   mavens-network:
-    driver: bridge
+    external: true 
 
 volumes:
   mongodb_data:
