@@ -14,7 +14,7 @@ jobs:
       - name: 🐳 Build Docker image
         run: |
           echo "Building Docker image..."
-          docker build -t mavens-api:latest -f ./dockerfile .
+          docker build -t mavens-api:latest -f ./Dockerfile .
 
       - name: 🚀 Deploy with Docker Compose
         run: |
